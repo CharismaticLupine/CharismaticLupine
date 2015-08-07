@@ -12,11 +12,19 @@ app.get('/physical', function(req, res){
     // Physical.query().fetchAll(...)
   Physical.fetchAll({withRelated: ['user', 'comment']})
     .then(function(physicals){
-      res.send(physicals.toJSON());
+      res.send(200, physicals.toJSON());
     });
 });
 
 app.post('/physical', function(req, res){
+  var newPhysical = new Physical({ geo: req.body.geo })
+
+  newPhysical.save().then(function(physical){
+    res.send(physical.toJSON());
+  }).catch(function(err){
+    console.log('Error creating new Physical: ', err);
+    res.send(500, err);
+  });
 });
 
 app.post('/physical/:id/comment', function(){} /* Append */);
