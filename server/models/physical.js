@@ -1,9 +1,9 @@
 var db = require('../db_schema.js');
-var Photo = require('./photos');
-var Comment = require('./comments');
+var Photo = require('./photo');
+var Comment = require('./comment');
 
-var User = db.Model.extend({
-  tableName: 'users',
+var Physical = db.Model.extend({
+  tableName: 'physicals',
   photos: function(){
     return this.hasMany(Photo);
   },
@@ -12,4 +12,4 @@ var User = db.Model.extend({
   }
 });
 
-module.exports = User;
+module.exports = Physical;
