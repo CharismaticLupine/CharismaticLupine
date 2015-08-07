@@ -4,6 +4,7 @@ var Comment = require('./comment');
 
 var User = db.Model.extend({
   tableName: 'users',
+  hasTimestamps: true,
   photos: function(){
     return this.hasMany(Photo);
   },

@@ -4,6 +4,7 @@ var Physical = require('./physical');
 
 var Photo = db.Model.extend({
   tableName: 'photos',
+  hasTimestamps: true,
   user: function(){
     return this.belongsTo(User);
   },
