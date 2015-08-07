@@ -25,4 +25,19 @@ db.knex.schema.hasTable('physical').then(function(exists){
   }
 });
 
+db.knex.schema.hasTable('photos').then(function(exists){
+  if(!exists){
+    db.schema.createTable('photos', function(photos){
+      photos.increments('id').primary();
+      photos.integer('physical_id').references('id').inTable('physical');
+      photos.integer('user_id').references('id').inTable('user');
+      photos.timestamps();
+    }).then(function(photos){
+      console.log('Create Table Photos');
+    }).catch(function(err){
+      console.log('error creating table Photos: ', err);
+    });
+  }
+});
+
 module.exports = db;
