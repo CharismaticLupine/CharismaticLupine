@@ -45,9 +45,9 @@ db.knex.schema.hasTable('comments').then(function(exists){
     db.knex.schema.createTable('comments', function(comments){
       comments.increments('id').primary();
       comments.text('text');
-      comment.integer('physicals_id').references('id').inTable('physicals');
-      photos.integer('user_id').references('id').inTable('users');
-      photos.timestamps();
+      comments.integer('physicals_id').references('id').inTable('physicals');
+      comments.integer('user_id').references('id').inTable('users');
+      comments.timestamps();
     }).then(function(comments){
       console.log('Create Table Comments');
     }).catch(function(err){
@@ -71,4 +71,5 @@ db.knex.schema.hasTable('users').then(function(exists){
   }
 });
 
-module.exports = db;
+exports.db = db;
+exports.knex = knex;

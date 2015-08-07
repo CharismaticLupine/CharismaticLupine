@@ -1,9 +1,10 @@
-var db = require('../db_schema.js');
-var User = require('./users');
-var Physical = require('./physicals');
+var db = require('../db_schema.js').db;
+var User = require('./user');
+var Physical = require('./physical');
 
 var Comment = db.Model.extend({
   tableName: 'comments',
+  hasTimestamps: true,
   user: function(){
     return this.belongsTo(User);
   },

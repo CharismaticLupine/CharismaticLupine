@@ -1,9 +1,10 @@
-var db = require('../db_schema.js');
-var Photo = require('./photos');
-var Comment = require('./comments');
+var db = require('../db_schema.js').db;
+var Photo = require('./photo');
+var Comment = require('./comment');
 
 var User = db.Model.extend({
   tableName: 'users',
+  hasTimestamps: true,
   photos: function(){
     return this.hasMany(Photo);
   },
