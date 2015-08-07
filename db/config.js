@@ -27,15 +27,46 @@ db.knex.schema.hasTable('physical').then(function(exists){
 
 db.knex.schema.hasTable('photos').then(function(exists){
   if(!exists){
-    db.schema.createTable('photos', function(photos){
+    db.knex.schema.createTable('photos', function(photos){
       photos.increments('id').primary();
       photos.integer('physical_id').references('id').inTable('physical');
-      photos.integer('user_id').references('id').inTable('user');
+      photos.integer('user_id').references('id').inTable('users');
       photos.timestamps();
     }).then(function(photos){
       console.log('Create Table Photos');
     }).catch(function(err){
       console.log('error creating table Photos: ', err);
+    });
+  }
+});
+
+db.knex.schema.hasTable('comments').then(function(exists){
+  if(!exists){
+    db.knex.schema.createTable('comments', function(comments){
+      comments.increments('id').primary();
+      comments.text('text');
+      comment.integer('physical_id').references('id').inTable('physical');
+      photos.integer('user_id').references('id').inTable('users');
+      photos.timestamps();
+    }).then(function(comments){
+      console.log('Create Table Comments');
+    }).catch(function(err){
+      console.log('error creating table Comments: ', err);
+    });
+  }
+});
+
+db.knex.schema.hasTable('users').then(function(exists){
+  if(!exists){
+    db.knex.schema.createTable('users', function(users){
+      users.increments('id').primary();
+      users.string('user_name', 20).unique();
+      users.string('password');
+      users.timestamps();
+    }).then(function(users){
+      console.log('Create Table Users');
+    }).catch(function(err){
+      console.log('error creating table Users: ', err);
     });
   }
 });
