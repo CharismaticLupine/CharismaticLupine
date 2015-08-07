@@ -9,21 +9,24 @@ module.exports = {
     new User({user_name: username})
       .fetch().then(function(user){
         if(!user){
-          //Not sure how this will react w ionic - intent is to try again!
-          res.redirect('/signin');
+          //Throw error
+          next(new Error('User does not exist'));
         } else {
           user.comparePassword(password, function(match){
             if (match){
-              //Send back JWT
+              var token = jwt.encode(user, 'I HAZ SECRETZ');
+              res.json({token: token});
             } else {
-              res.redirect('/signin');
+              return next(new Error('Password FAIL'));
             }
           });
         }
       });
   },
 
-  signup: function(req, res, next){},
+  signup: function(req, res, next){
+    
+  },
   checkAuth: function(req, res, next){}
 
 };
