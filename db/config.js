@@ -11,16 +11,16 @@ var knex = require('knex')({
 
 var db = require('bookshelf')(knex);
 
-db.knex.schema.hasTable('physical').then(function(exists){
+db.knex.schema.hasTable('physicals').then(function(exists){
   if(!exists){
-    db.knex.schema.createTable('physical', function(physical){
-      physical.increments('id').primary();
-      physical.specificType('geo', 'geometry(POINT,4326)'); // table.specificType(column, value)
-      physical.timestamps();
-    }).then(function(physical){
-      console.log('Create Table Physical');
+    db.knex.schema.createTable('physicals', function(physicals){
+      physicals.increments('id').primary();
+      physicals.specificType('geo', 'geometry(POINT,4326)'); // table.specificType(column, value)
+      physicals.timestamps();
+    }).then(function(physicals){
+      console.log('Create Table Physicals');
     }).catch(function(err){
-      console.log('error creating table Physical: ', err);
+      console.log('error creating table Physicals: ', err);
     });
   }
 });
@@ -29,7 +29,7 @@ db.knex.schema.hasTable('photos').then(function(exists){
   if(!exists){
     db.knex.schema.createTable('photos', function(photos){
       photos.increments('id').primary();
-      photos.integer('physical_id').references('id').inTable('physical');
+      photos.integer('physicals_id').references('id').inTable('physicals');
       photos.integer('user_id').references('id').inTable('users');
       photos.timestamps();
     }).then(function(photos){
@@ -45,7 +45,7 @@ db.knex.schema.hasTable('comments').then(function(exists){
     db.knex.schema.createTable('comments', function(comments){
       comments.increments('id').primary();
       comments.text('text');
-      comment.integer('physical_id').references('id').inTable('physical');
+      comment.integer('physicals_id').references('id').inTable('physicals');
       photos.integer('user_id').references('id').inTable('users');
       photos.timestamps();
     }).then(function(comments){
