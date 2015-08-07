@@ -1,13 +1,15 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var app = express();
-
 
 app.configure(function() {
   //serve static assets
   app.use(express.static(__dirname + '/public'));
+  app.use(bodyParser);
 });
 
-app.get('/physical/loc', function(){}/* Respond w Physicals */);
+app.get('/physical', function(req, res){
+});
 
 app.post('/physical', function(){}/* Add Comment */);
 
