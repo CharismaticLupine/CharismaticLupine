@@ -1,4 +1,4 @@
-var db = require('../config');
+var db = require('../db_schema.js');
 var User = require('./users');
 var Physical = require('./physicals');
 
