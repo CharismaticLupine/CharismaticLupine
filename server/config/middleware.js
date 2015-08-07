@@ -23,6 +23,6 @@ module.exports = function (app, express) {
   app.use(helpers.errorHandler);
 
   // inject our routers into their respective route files
-  require('../routes/userRoutes.js')(userRouter);
-  require('../routes/physRoutes.js')(physRouter);
+  // require('../users/userRoutes.js')(userRouter);
+  // require('../physicals/physRoutes.js')(physRouter);
 };
