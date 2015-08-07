@@ -8,22 +8,23 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 
 app.get('/physical', function(req, res){
-  // TODO: specify location as query parameter
+  // TODO: specify geo as query parameter
     // Physical.query().fetchAll(...)
   Physical.fetchAll({withRelated: ['user', 'comment']})
     .then(function(physicals){
-      res.send(200, physicals.toJSON());
+      res.status(200).send(physicals.toJSON());
     });
 });
 
 app.post('/physical', function(req, res){
+  // DEBUG: req.body is empty on all POST req
   var newPhysical = new Physical({ geo: req.body.geo })
 
   newPhysical.save().then(function(physical){
-    res.send(physical.toJSON());
+    res.status(201).send(physical.toJSON());
   }).catch(function(err){
     console.log('Error creating new Physical: ', err);
-    res.send(500, err);
+    res.status(500).send(err);
   });
 });
 

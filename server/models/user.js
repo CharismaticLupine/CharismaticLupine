@@ -1,4 +1,4 @@
-var db = require('../db_schema.js');
+var db = require('../db_schema.js').db;
 var Photo = require('./photo');
 var Comment = require('./comment');
 
