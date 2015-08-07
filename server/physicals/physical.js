@@ -1,6 +1,5 @@
 var db = require('../db_schema.js');
 var knex = db.knex;
-// var st = require('knex-postgis')(knex);
 var Photo = require('../photos/photo');
 var Comment = require('../comments/comment');
 
