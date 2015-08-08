@@ -3,9 +3,10 @@ var bodyParser = require('body-parser');
 var Physical = require('./models/physical');
 var app = express();
 
+//parse req data
+app.use(bodyParser.json());
 //serve static assets
 app.use(express.static(__dirname + '/public'));
-app.use(bodyParser.json());
 
 app.get('/physical', function(req, res){
   // TODO: specify geo as query parameter
