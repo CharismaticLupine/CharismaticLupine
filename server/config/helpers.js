@@ -20,13 +20,13 @@ module.exports = {
     var user;
 
     if (!token) {
-      // return res.status(403).end(); // send forbidden if a token is not provided
+      return res.status(403).end(); // send forbidden if a token is not provided
     }
 
     try {
       // decode token and attach user to the request
       // for use inside our controllers
-      // user = jwt.decode(token, 'secret');
+      user = jwt.decode(token, 'secret');
       req.user = user;
       next();
     } catch(error) {
