@@ -3,11 +3,29 @@ var Physical = require('./physical');
 
 module.exports = {
   getNearbyPhysicals: function(req, res, next){
-    Physical.fetchAll({withRelated: ['user', 'comment']})
+    var proximity = 50, // meters
+        x = JSON.parse(req.params['location'])[0],
+        y = JSON.parse(req.params['location'])[1];
+    // Physical.fetchAll({withRelated: ['user', 'comment']})
+    //   .then(function(physicals){
+    //     res.status(200).send(physicals.toJSON());
+    //     next();
+    //   });
+
+    // above code throws unlikely errors: https://github.com/tgriesser/bookshelf/issues/104
+      // so we do the below to manually make the select
+      // use ::geography to cast from geometry to geography type, so that distance measurements are correct
+    knex.raw('SELECT * FROM physicals WHERE ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(' + x + ',' + y + '), 4326)::geography, ' + proximity + ' )')
       .then(function(physicals){
-        res.status(200).send(physicals.toJSON());
+        console.log('Success on GET /physical/:location . Returned ' +  physicals.rows.length + ' results.');
+        res.status(200).send(physicals.rows);
         next();
-      });
+      })
+      .catch(function(err){
+        console.log('Error on GET /physical/:location : ', err);
+        res.status(500).send(err);
+        next();
+      })
   },
 
   createNewPhysical: function(req, res, next){
