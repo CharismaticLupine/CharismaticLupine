@@ -2,8 +2,8 @@ var server_config = require('../db_schema.js');
 var db = server_config.db;
 var knex = server_config.knex;
 var st = require('knex-postgis')(knex);
-var Photo = require('./photos/photo');
-var Comment = require('./comments/comment');
+var Photo = require('../photos/photo');
+var Comment = require('../comments/comment');
 
 var Physical = db.Model.extend({
   tableName: 'physicals',
