@@ -25,6 +25,27 @@ module.exports = {
   },
 
   signup: function(req, res, next){
+    var username = req.body.username;
+    var password = req.body.password;
+    console.log(req.body);
+    new User({user_name: username})
+      .fetch().then(function(user) {
+        if(user){
+          //throw error if user exists
+          next(new Error('User already exsists!'));
+        } else {
+          var newUser = new User({
+            user_name: username,
+            password: password
+          });
+          newUser.save()
+            .then(function(){
+              console.log('newUser saved', newUser);
+              return res.redirect('/');
+            });
+        }
+
+      });
     
   },
   checkAuth: function(req, res, next){}
