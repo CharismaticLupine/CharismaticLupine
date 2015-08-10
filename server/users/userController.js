@@ -27,7 +27,6 @@ module.exports = {
   signup: function(req, res, next){
     var username = req.body.username;
     var password = req.body.password;
-    console.log(req.body);
     new User({user_name: username})
       .fetch().then(function(user) {
         if(user){
@@ -39,15 +38,35 @@ module.exports = {
             password: password
           });
           newUser.save()
-            .then(function(){
-              console.log('newUser saved', newUser);
-              return res.redirect('/');
+            .then(function(user){
+              var token = jwt.encode(user, 'I HAZ SECRETZ');
+              res.json({token: token});
             });
         }
-
       });
     
   },
-  checkAuth: function(req, res, next){}
+  checkAuth: function(req, res, next){
+    // checking to see if the user is authenticated
+    // grab the token in the header is any
+    // then decode the token, which we end up being the user object
+    // check to see if that user exists in the database
+    var token = req.headers['x-access-token'];
+    if (!token) {
+      next(new Error('No token'));
+    } else {
+      var user = jwt.decode(token, 'I HAZ SECRETZ');
+      new User({user_name: user.user_name})
+        .fetch().then(function(user){
+          if(user){
+            res.sendStatus(200);
+          } else {
+            res.sendStatus(401);
+          }
+        }).catch(function(error){
+          next(error);
+        });
+    }
 
+  }
 };
