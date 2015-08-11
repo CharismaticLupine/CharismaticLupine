@@ -26,7 +26,8 @@ module.exports = function (app, express) {
   app.use(helpers.errorHandler);
 
   // inject our routers into their respective route files
-  // require('../users/userRoutes.js')(userRouter);
+  require('../users/userRoutes.js')(userRouter);
+  // require('../physicals/physRoutes.js')(physRouter);
   require('../photos/photoRouter.js')(photoRouter);
 
   require('../photos/photoRouter.js')(photoRouter);

@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/RRDuke/CharismaticLupine#readme",
   "dependencies": {
+
+    "bcrypt-nodejs": "0.0.3",
     "bluebird": "^2.9.34",
     "body-parser": "^1.13.3",
     "bookshelf": "^0.8.1",
