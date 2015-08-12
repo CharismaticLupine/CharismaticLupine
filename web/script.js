@@ -1,6 +1,7 @@
 (function(){
 
 var app = {
+  url : 'http://localhost:8000/',
   init: function(){
     L.mapbox.accessToken = 'pk.eyJ1IjoiamFtZXMtbGFuZS1jb25rbGluZyIsImEiOiJ3RHBOc1BZIn0.edCFqVis7qgHPRgdq0WYsA';
     app.map = L.mapbox.map('map', 'mapbox.streets')
@@ -13,7 +14,7 @@ var app = {
   },
 
   loadData: function(){
-    d3.json('data/sample_point_data.geojson', function(collection){
+    d3.json(app.url + 'physical', function(collection){
       var feature = app.g.selectAll("path")
         .data(collection.features)
         .enter().append("path");
