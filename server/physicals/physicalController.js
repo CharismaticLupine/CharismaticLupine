@@ -2,6 +2,20 @@ var knex = require('../db_schema').knex;
 var Physical = require('./physical');
 
 module.exports = {
+  getAllPhysicals: function(req, res, next){
+    Physical.fetchAll().then(function(collection){
+      var physicals = collection.toJSON();
+      console.log('Success on GET /physical . Returned ' +  physicals + ' results.');
+      res.status(200).send(physicals);
+      next();
+    })
+    .catch(function(err){
+      console.log('Error on GET /physical/:location : ', err);
+      res.status(500).send(err);
+      next();
+    })
+  },
+
   getNearbyPhysicals: function(req, res, next){
     var proximity = 50, // meters
         x = JSON.parse(req.params['location'])[0],
