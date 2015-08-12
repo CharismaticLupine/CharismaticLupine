@@ -1,4 +1,4 @@
-//THIS IS FROM SHORTLY-ANGULAR - HAVE NOT YET REVISED
+//Revised from shortly-angular
 var jwt  = require('jwt-simple');
 
 module.exports = {
@@ -26,7 +26,7 @@ module.exports = {
     try {
       // decode token and attach user to the request
       // for use inside our controllers
-      user = jwt.decode(token, 'secret');
+      user = jwt.decode(token, 'I HAZ A SECRET');
       req.user = user;
       next();
     } catch(error) {
