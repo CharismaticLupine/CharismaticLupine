@@ -8,13 +8,13 @@ module.exports = {
       .then(function(results){
         var physicalsGeoJSON = {
           "type": "FeatureCollection",
-          "features" : results.map(function(result){ 
-            return { 
-              "type": "Feature", 
-              "properties": { 
+          "features" : results.map(function(result){
+            return {
+              "type": "Feature",
+              "properties": {
                 "created_at": result.created_at,
                 "updated_at": result.updated_at
-              }, 
+              },
               "geometry": JSON.parse(result.geo)
             };
           })
@@ -32,8 +32,11 @@ module.exports = {
 
   getNearbyPhysicals: function(req, res, next){
     var proximity = 50, // meters
-        x = JSON.parse(req.params['location'])[0],
-        y = JSON.parse(req.params['location'])[1];
+        // x = JSON.parse(req.params['longitude'])[0],
+        // y = JSON.parse(req.params['latitude'])[1];
+        location = req.params['location'].split(',');
+    var x = location[0];
+    var y = location[1];
     // Physical.fetchAll({withRelated: ['user', 'comment']})
     //   .then(function(physicals){
     //     res.status(200).send(physicals.toJSON());
@@ -46,7 +49,7 @@ module.exports = {
     knex.raw('SELECT * FROM physicals WHERE ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(' + x + ',' + y + '), 4326)::geography, ' + proximity + ' )')
       .then(function(physicals){
         console.log('Success on GET /physical/:location . Returned ' +  physicals.rows.length + ' results.');
-        res.status(200).send(physicals.rows);
+        res.status(200).send({physicals: physicals.rows});
         next();
       })
       .catch(function(err){
