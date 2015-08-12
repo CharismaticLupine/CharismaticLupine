@@ -2,6 +2,34 @@ var knex = require('../db_schema').knex;
 var Physical = require('./physical');
 
 module.exports = {
+  getAllPhysicals: function(req, res, next){
+    knex('physicals')
+      .select(knex.raw('ST_AsGeoJSON(geo) as geo, created_at, updated_at'))
+      .then(function(results){
+        var physicalsGeoJSON = {
+          "type": "FeatureCollection",
+          "features" : results.map(function(result){ 
+            return { 
+              "type": "Feature", 
+              "properties": { 
+                "created_at": result.created_at,
+                "updated_at": result.updated_at
+              }, 
+              "geometry": JSON.parse(result.geo)
+            };
+          })
+        };
+        console.log('Success on GET /physical . Returned ' +  physicalsGeoJSON.features.length + ' results.');
+        res.status(200).send(physicalsGeoJSON);
+        next();
+      })
+      .catch(function(err){
+        console.log('Error on GET /physical/ : ', err);
+        res.status(500).send(err);
+        next();
+      })
+  },
+
   getNearbyPhysicals: function(req, res, next){
     var proximity = 50, // meters
         x = JSON.parse(req.params['location'])[0],

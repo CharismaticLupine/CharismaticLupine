@@ -1,4 +1,5 @@
 var morgan      = require('morgan'); // used for logging incoming request
+var cors        = require('cors');
 var bodyParser  = require('body-parser');
 var helpers     = require('./helpers.js'); // our custom middleware
 
@@ -12,13 +13,14 @@ module.exports = function (app, express) {
   app.use(morgan('dev'));
   app.use(bodyParser.urlencoded({extended: true}));
   app.use(bodyParser.json());
+  app.use(cors());
   //TODO: Set Static Directory
   app.use(express.static(__dirname + '/../../client'));
 
   app.use('/users', userRouter); // use user router for all user request
 
   // authentication middleware used to decode token and made available on the request
-  app.use('/physical', helpers.decode);
+  // app.use('/physical', helpers.decode);
   app.use('/physical', physicalRouter); // user link router for link request
   app.use('/photo', photoRouter);
 
