@@ -7,7 +7,6 @@ module.exports = {
     var physicalId = JSON.parse(req.params['id']);
     Comment.where({physicals_id: physicalId}).fetchAll()
       .then(function(comments){
-        console.log(comments);
         console.log('Success on GET /comments/:id. Returned ' + comments.models.length + ' results.');
         res.status(200).send(comments.models);
         next();
@@ -21,15 +20,16 @@ module.exports = {
   },
 
   addComment: function(req, res, next){
-    var userId = req.body.user;
+    var userId = req.user.id; //user is created by helpers.decode
     var text = req.body.text;
-    var physicalId = req.body.phyiscal;
+    var physicalId = req.body.physical;
+
     // define insert query as knex raw SQL
     new Comment({user_id: userId, physicals_id: physicalId, text: text})
       .save()
       .then(function(model){
         console.log('Comment successfully added');
-        res.status(201).send(model);;
+        res.status(201).send(model);
       });
 
    

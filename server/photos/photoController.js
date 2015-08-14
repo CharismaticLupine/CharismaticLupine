@@ -24,8 +24,8 @@ var getPhotoFromFs = function(photoId) {
 module.exports = {
   postPhoto: function(req, res, next) {
    
-    var userId = req.body.user || 1; //remove default value
-    var physicalId = req.body.physical || 1; //remove default value
+    var userId = req.user.id; //user is created on req by helpers.decode
+    var physicalId = req.body.physical;
     var photoAsset =  req.file.buffer;
 
     var newPhoto = new Photo({ 'physicals_id': physicalId, 'user_id': userId });
