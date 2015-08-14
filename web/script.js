@@ -1,10 +1,21 @@
 
 var snap = angular.module('snap', ["angular-mapbox"])
-  .controller('HeaderCtrl', ['$scope', function ($scope) {
-
+  .factory('DOMelements', function(){
+    // useful for setting an element's absolute positioning based on a dynamically positioned element
+      // e.g. the header and map elements
+    return {
+      headerHeight: function(){
+        return angular.element(document.querySelector('header'))[0].offsetHeight;
+      }
+    };
+      
+  })
+  .controller('HeaderCtrl', ['$scope', '$http', function ($scope, $http) {
+    $scope.userName = 'Martha Stewart';
   }])
-  .controller('MapCtrl', ['$scope', 'mapboxService', '$http', function ($scope, mapboxService, $http) {
+  .controller('MapCtrl', ['$scope', 'mapboxService', '$http', 'DOMelements', function ($scope, mapboxService, $http, DOM) {
     mapboxService.init({ accessToken: 'pk.eyJ1IjoiamFtZXMtbGFuZS1jb25rbGluZyIsImEiOiJ3RHBOc1BZIn0.edCFqVis7qgHPRgdq0WYsA' });
+    $scope.DOM = DOM;
     $scope.geojson = {};
 
     $http.get('http://localhost:8000/physical')
@@ -13,7 +24,6 @@ var snap = angular.module('snap', ["angular-mapbox"])
       });
 
   }])
-
 
 // (function(){
 
@@ -77,4 +87,3 @@ var snap = angular.module('snap', ["angular-mapbox"])
 // app.init();
 
 // })()
-
