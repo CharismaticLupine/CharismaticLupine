@@ -71,13 +71,7 @@ module.exports = {
         req.status(500).send(err);
       });
 
-    getPhotoFromFs(photoId)
-    .then(function(val) {
-      res.status(200).send(val);
-    })
-    .catch(function(err) {
-      res.status(500).send(err);
-    });
+    
   },
   getPhotosByUser: function(req, res, next) {
     //TODO: Write this function if we require this functionality
