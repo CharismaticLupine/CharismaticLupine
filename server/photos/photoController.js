@@ -53,22 +53,26 @@ module.exports = {
   getPhotosByPhysical: function(req, res, next) {
     var physicalId = req.params.id;
     var result = {photos: []};
-    Photo.where({physical_id: physicalId}).fetchAll()
+    //fetch all photos for the desired physical
+    Photo.where({physicals_id: physicalId}).fetchAll()
       .then(function(photos){
-        
-        photos.models.forEach(function(dbPhoto){
+        photos.models.forEach(function(dbPhoto, index){
           getPhotoFromFs(dbPhoto.id)
             .then(function(photo){
               result.photos.push(photo);
+              //hacky way to make sure all photos are loaded before sending response
+              if(index === photos.models.length - 1){
+                res.status(200).send(result);
+              }
             })
             .catch(function(err){
+              console.log(err);
               res.status(500).send(err);
             });
         });
-        res.status(200).send(result);      
       })
       .catch(function(err){
-        req.status(500).send(err);
+        res.status(500).send(err);
       });
 
     
