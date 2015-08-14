@@ -28,10 +28,9 @@ module.exports = {
      * Saves photo to filesystem as id.jpg
      * then saves relationship to database
      */
-    var user_id = req.body.user_id || 1; //remove default value
-    var physical_id = req.body.physical_id || 1; //remove default value
-    var photoAsset =  'This is a mocked photo'; //req.file; // needs correct body parser
-
+    var user_id = req.body.user_id;
+    var physical_id = req.body.physical_id;
+    var photoAsset =  req.file.buffer;
     var newPhoto = new Photo({ 'physicals_id': physical_id, 'user_id': user_id });
     newPhoto.save()
     .then(function(photo){
@@ -45,10 +44,11 @@ module.exports = {
     });
   },
   getPhoto: function(req, res, next) {
+    console.log('getting photos');
     var photoId = req.params.id;
     getPhotoFromFs(photoId)
     .then(function(val) {
-      res.status(200).send(val);
+      res.status(200).send({data: val});
     })
     .catch(function(err) {
       res.status(500).send(err);
