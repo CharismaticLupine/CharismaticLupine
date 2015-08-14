@@ -26,7 +26,7 @@ module.exports = {
     try {
       // decode token and attach user to the request
       // for use inside our controllers
-      user = jwt.decode(token, 'I HAZ A SECRET');
+      user = jwt.decode(token, 'I HAZ SECRETZ');
       req.user = user;
       next();
     } catch(error) {
