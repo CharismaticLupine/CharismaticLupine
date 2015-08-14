@@ -1,0 +1,15 @@
+{
+  "name": "snap greenfield",
+  "version": "0.0.0",
+  "authors": [
+    "James Conkling <james.lane.conkling@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
