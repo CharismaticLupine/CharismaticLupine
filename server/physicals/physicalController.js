@@ -27,7 +27,7 @@ module.exports = {
         console.log('Error on GET /physical/ : ', err);
         res.status(500).send(err);
         next();
-      })
+      });
   },
 
   getNearbyPhysicals: function(req, res, next){
@@ -56,7 +56,7 @@ module.exports = {
         console.log('Error on GET /physical/:location : ', err);
         res.status(500).send(err);
         next();
-      })
+      });
   },
 
   createNewPhysical: function(req, res, next){
@@ -73,7 +73,7 @@ module.exports = {
         console.log(err);
         res.status(500).send(err);
         next();
-      })
+      });
 
     // below code throws unlikely errors: https://github.com/tgriesser/bookshelf/issues/104
       // so we do the above to manually make the insert

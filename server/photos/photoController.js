@@ -24,8 +24,8 @@ var getPhotoFromFs = function(photoId) {
 module.exports = {
   postPhoto: function(req, res, next) {
    
-    var userId = req.body.user || 1; //remove default value
-    var physicalId = req.body.physical || 1; //remove default value
+    var userId = req.user.id; //user is created on req by helpers.decode
+    var physicalId = req.body.physical;
     var photoAsset =  req.file.buffer;
 
     var newPhoto = new Photo({ 'physicals_id': physicalId, 'user_id': userId });
@@ -71,13 +71,7 @@ module.exports = {
         req.status(500).send(err);
       });
 
-    getPhotoFromFs(photoId)
-    .then(function(val) {
-      res.status(200).send(val);
-    })
-    .catch(function(err) {
-      res.status(500).send(err);
-    });
+    
   },
   getPhotosByUser: function(req, res, next) {
     //TODO: Write this function if we require this functionality
