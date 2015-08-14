@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="no-js">
+<html>
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,14 +9,28 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h2>Snap</h2>
-  </header>
+  <div ng-app="snap">
+    <header ng-controller="HeaderCtrl">
+      <h2>Snap</h2>
+    </header>
 
-  <div id="map"></div>
+    <div ng-controller="MapCtrl">
+      <mapbox map-id="mapbox.streets" lat="37.78" lng="-122.45" zoom="13">
+        <div ng-repeat="feature in geojson.features">
+          <marker lat="{{feature.geometry.coordinates[1]}}" lng="{{feature.geometry.coordinates[0]}}" color="#39cccc" symbol="star">
+            <div><em>Created At: {{feature.properties.created_at}}</em></div>
+            <div><em>Updated At: {{feature.properties.updated_at}}</em></div>
+          </marker>
+        </div>
+      </mapbox>
+    </div>
+    
+  </div>
 
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/d3/d3.js" charset="utf-8"></script>
   <script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
-  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="bower_components/angular-mapbox/dist/angular-mapbox.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
