@@ -20,7 +20,7 @@
     </header>
 
     <div ng-controller="MapCtrl">
-      <mapbox map-id="mapbox.streets" lat="37.78" lng="-122.45" zoom="13" ng-style="{'top': DOM.headerHeight() + 'px'}">
+      <mapbox map-id="james-lane-conkling.5630f970" lat="37.78" lng="-122.45" zoom="13" ng-style="{'top': DOM.headerHeight() + 'px'}">
         <div id='find'>{{headerHeight}}</div>
         <div ng-repeat="feature in geojson.features">
           <marker lat="{{feature.geometry.coordinates[1]}}" lng="{{feature.geometry.coordinates[0]}}" color="#39cccc">
