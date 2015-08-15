@@ -1,6 +1,6 @@
 var db = require('../db_schema.js');
-var User = require('../users/user');
-var Physical = require('../physicals/physical');
+User = require('../users/user');
+Physical = require('../physicals/physical');
 
 var Photo = db.Model.extend({
   tableName: 'photos',
@@ -9,8 +9,8 @@ var Photo = db.Model.extend({
     return this.belongsTo(User);
   },
   physical: function(){
-    return this.belongsTo(Physical);
+    return this.belongsTo(Physical, 'physicals_id');
   }
 });
 
-module.exports = Photo;
+module.exports = db.model('Photo', Photo);

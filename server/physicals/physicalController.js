@@ -59,6 +59,19 @@ module.exports = {
       });
   },
 
+  getPhysicalById: function(req, res, next){
+    Physical.forge({id: req.params['id']})
+      .fetch({ withRelated: ['comments', 'photos'] })
+      .then(function(physical){
+        console.log('Success on GET /physical/:id . Returned physical ' +  physical.id );
+        res.status(200).send({ physicals: [physical] });
+      })
+      .catch(function(err){
+        console.log("Error on GET /physical/:id : ", err);
+        res.status(500).send(err);
+      });
+  },
+
   createNewPhysical: function(req, res, next){
     var x = req.body.geo[0],
         y = req.body.geo[1];

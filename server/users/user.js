@@ -1,6 +1,6 @@
 var db = require('../db_schema.js');
-var Photo = require('../photos/photo');
-var Comment = require('../comments/comment');
+Photo = require('../photos/photo');
+Comment = require('../comments/comment');
 
 var bcrypt = require('bcrypt-nodejs');
 var Promise = require('bluebird');
@@ -33,4 +33,4 @@ var User = db.Model.extend({
   }
 });
 
-module.exports = User;
+module.exports = db.model('User', User);
