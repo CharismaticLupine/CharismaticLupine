@@ -37,6 +37,7 @@ module.exports = {
       })
       .catch(function(err){
         console.log('Error on GET /physical/ : ', err);
+        console.log(err.stack);
         res.status(500).send(err);
         next();
       });
@@ -59,13 +60,15 @@ module.exports = {
       // so we do the below to manually make the select
       // use ::geography to cast from geometry to geography type, so that distance measurements are correct
     knex.raw('SELECT *, ST_AsGeoJSON(geo) as geojson FROM physicals WHERE ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(' + x + ',' + y + '), 4326)::geography, ' + proximity + ' )')
-      .then(function(physicals){
-        console.log('Success on GET /physical/:location . Returned ' +  physicals.rows.length + ' results.');
-        res.status(200).send({physicals: physicals.rows});
+      .then(function(results){
+        var physicalsGeoJSON = _dbRows2GeoJSON(results.rows);
+        console.log('Success on GET /physical/:location . Returned ' +  physicalsGeoJSON.length + ' results.');
+        res.status(200).send(physicalsGeoJSON);
         next();
       })
       .catch(function(err){
         console.log('Error on GET /physical/:location : ', err);
+        console.log(err.stack);
         res.status(500).send(err);
         next();
       });
@@ -80,6 +83,7 @@ module.exports = {
       })
       .catch(function(err){
         console.log("Error on GET /physical/:id : ", err);
+        console.log(err.stack);
         res.status(500).send(err);
       });
   },
@@ -95,7 +99,8 @@ module.exports = {
         next();
       })
       .catch(function(err){
-        console.log(err);
+        console.log("Error on POST /physical ", err);
+        console.log(err.stack);
         res.status(500).send(err);
         next();
       });
