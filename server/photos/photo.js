@@ -1,6 +1,6 @@
 var db = require('../db_schema.js');
-User = require('../users/user');
-Physical = require('../physicals/physical');
+require('../users/user');
+require('../physicals/physical');
 
 var Photo = db.Model.extend({
   tableName: 'photos',

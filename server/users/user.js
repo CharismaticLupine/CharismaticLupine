@@ -1,6 +1,6 @@
 var db = require('../db_schema.js');
-Photo = require('../photos/photo');
-Comment = require('../comments/comment');
+require('../photos/photo');
+require('../comments/comment');
 
 var bcrypt = require('bcrypt-nodejs');
 var Promise = require('bluebird');
