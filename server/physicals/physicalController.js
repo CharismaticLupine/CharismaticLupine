@@ -6,19 +6,7 @@ module.exports = {
     knex('physicals')
       .select(knex.raw('ST_AsGeoJSON(geo) as geo, created_at, updated_at'))
       .then(function(results){
-        var physicalsGeoJSON = {
-          "type": "FeatureCollection",
-          "features" : results.map(function(result){
-            return {
-              "type": "Feature",
-              "properties": {
-                "created_at": result.created_at,
-                "updated_at": result.updated_at
-              },
-              "geometry": JSON.parse(result.geo)
-            };
-          })
-        };
+        var physicalsGeoJSON = this._dbRows2GeoJSON(results);
         console.log('Success on GET /physical . Returned ' +  physicalsGeoJSON.features.length + ' results.');
         res.status(200).send(physicalsGeoJSON);
         next();
@@ -31,7 +19,7 @@ module.exports = {
   },
 
   getNearbyPhysicals: function(req, res, next){
-    var proximity = 50, // meters
+    var proximity = 160, // meters // this should be lowered, probably, to something like 20 meters (depending on avg GPS error, yeah?)
         // x = JSON.parse(req.params['longitude'])[0],
         // y = JSON.parse(req.params['latitude'])[1];
         location = req.params['location'].split(',');
@@ -102,5 +90,24 @@ module.exports = {
     //   res.status(500).send(err);
     //   next();
     // });
+  },
+
+  _dbRows2GeoJSON: function(models){
+    // expects an array of db rows, as returned by a Knex query
+      // TODO: this should be reformatted to fit Bookshelf's Model.fetchAll() returned array of models,
+      // once we jettison this cludgy reliance on raw knex queries
+    var physicalsGeoJSON = {
+      "type": "FeatureCollection",
+      "features" : results.map(function(result){
+        return {
+          "type": "Feature",
+          "properties": {
+            "created_at": result.created_at,
+            "updated_at": result.updated_at
+          },
+          "geometry": JSON.parse(result.geo)
+        };
+      })
+    }; 
   }
 };
