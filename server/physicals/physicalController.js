@@ -1,12 +1,36 @@
 var knex = require('../db_schema').knex;
+var _ = require('underscore');
 require('./physical');
+
+
+////////////////////////////////
+// geographic utility functions
+////////////////////////////////
+  // move these to a new module?
+
+_dbRows2GeoJSON = function(results){
+  // expects an array of db rows, as returned by a Knex query
+    // TODO: this should be reformatted to fit Bookshelf's Model.fetchAll() returned array of models,
+    // once we jettison this cludgy reliance on raw knex queries
+  return {
+    "type": "FeatureCollection",
+    "features" : results.map(function(result){
+      return {
+        "type": "Feature",
+        "properties": _.omit(result, ['geo', 'geojson']),
+        "geometry": JSON.parse(result.geojson)
+      };
+    })
+  };
+};
+
 
 module.exports = {
   getAllPhysicals: function(req, res, next){
     knex('physicals')
-      .select(knex.raw('ST_AsGeoJSON(geo) as geo, created_at, updated_at'))
+      .select(knex.raw('ST_AsGeoJSON(geo) as geojson, created_at, updated_at'))
       .then(function(results){
-        var physicalsGeoJSON = this._dbRows2GeoJSON(results);
+        var physicalsGeoJSON = _dbRows2GeoJSON(results);
         console.log('Success on GET /physical . Returned ' +  physicalsGeoJSON.features.length + ' results.');
         res.status(200).send(physicalsGeoJSON);
         next();
@@ -34,7 +58,7 @@ module.exports = {
     // above code throws unlikely errors: https://github.com/tgriesser/bookshelf/issues/104
       // so we do the below to manually make the select
       // use ::geography to cast from geometry to geography type, so that distance measurements are correct
-    knex.raw('SELECT * FROM physicals WHERE ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(' + x + ',' + y + '), 4326)::geography, ' + proximity + ' )')
+    knex.raw('SELECT *, ST_AsGeoJSON(geo) as geojson FROM physicals WHERE ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(' + x + ',' + y + '), 4326)::geography, ' + proximity + ' )')
       .then(function(physicals){
         console.log('Success on GET /physical/:location . Returned ' +  physicals.rows.length + ' results.');
         res.status(200).send({physicals: physicals.rows});
@@ -91,23 +115,4 @@ module.exports = {
     //   next();
     // });
   },
-
-  _dbRows2GeoJSON: function(models){
-    // expects an array of db rows, as returned by a Knex query
-      // TODO: this should be reformatted to fit Bookshelf's Model.fetchAll() returned array of models,
-      // once we jettison this cludgy reliance on raw knex queries
-    var physicalsGeoJSON = {
-      "type": "FeatureCollection",
-      "features" : results.map(function(result){
-        return {
-          "type": "Feature",
-          "properties": {
-            "created_at": result.created_at,
-            "updated_at": result.updated_at
-          },
-          "geometry": JSON.parse(result.geo)
-        };
-      })
-    }; 
-  }
 };
