@@ -1,5 +1,5 @@
 var knex = require('../db_schema').knex;
-var Physical = require('./physical');
+require('./physical');
 
 module.exports = {
   getAllPhysicals: function(req, res, next){
