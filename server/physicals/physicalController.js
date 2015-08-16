@@ -101,8 +101,31 @@ module.exports = {
   createNewPhysical: function(req, res, next){
     var x = req.body.geo[0],
         y = req.body.geo[1];
+
+    // this version throws the error:  [Error: Cannot find module 'pg-native']
+    // Physical.forge()
+    //   .save({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
+    //   .then(function(response){
+    //     console.log('Success on POST /physical/:location . Created point: ' + response);
+    //     res.status(201).send(response);
+    //     next();
+    //   })
+    //   .catch(function(err){
+    //     console.log("Error on POST /physical ", err);
+    //     console.log(err.stack);
+    //     res.status(500).send(err);
+    //     next();
+    //   });
+
+    // this version fails to insert the geo column
+    // Physical.forge()
+    //   .query('insert', { 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
+    //   .save()
+    //   .then(...)
+
+
     // define insert query as knex raw SQL
-    knex('physicals') //.raw('INSERT INTO physicals (geo) VALUES ( ST_SetSRID( ST_Point(' + x + ',' + y + ') , 4326) )')
+    knex('physicals')
       .insert({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
       .returning([ 'id', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .then(function(response){
