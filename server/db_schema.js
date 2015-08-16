@@ -1,5 +1,6 @@
 var knex = require('knex')({
   client: 'pg',
+  debug: true,
   connection: {
     host     : '127.0.0.1',
     // user     : 'snap',
