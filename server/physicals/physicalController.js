@@ -50,25 +50,22 @@ module.exports = {
   },
 
   getNearbyPhysicals: function(req, res, next){
-    var proximity = 160, // meters // this should be lowered, probably, to something like 20 meters (depending on avg GPS error, yeah?)
-        // x = JSON.parse(req.params['longitude'])[0],
-        // y = JSON.parse(req.params['latitude'])[1];
-        location = req.params['location'].split(',');
-    var x = location[0];
-    var y = location[1];
-    // Physical.fetchAll({withRelated: ['user', 'comment']})
-    //   .then(function(physicals){
-    //     res.status(200).send(physicals.toJSON());
-    //     next();
-    //   });
+    var proximity = 180, // meters // this should be lowered, probably, to something like 20 meters (depending on avg GPS error, yeah?)
+        location = req.params['location'].split(','),
+        x = location[0],
+        y = location[1];
 
-    // above code throws unlikely errors: https://github.com/tgriesser/bookshelf/issues/104
-      // so we do the below to manually make the select
-      // use ::geography to cast from geometry to geography type, so that distance measurements are correct
-    knex.raw('SELECT *, ST_AsGeoJSON(geo) as geojson FROM physicals WHERE ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(' + x + ',' + y + '), 4326)::geography, ' + proximity + ' )')
+    // use ::geography to cast from geometry to geography type, so that distance measurements are correct
+    Physical.forge()
+      .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
+      .query('where', knex.raw('ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ? )', [x, y, proximity]))
+      .fetchAll({ withRelated: ['comments', 'photos'] })
       .then(function(results){
-        var physicalsGeoJSON = _dbRows2GeoJSON(results.rows);
-        console.log('Success on GET /physical/:location . Returned ' +  physicalsGeoJSON.length + ' results.');
+        results = _.map(results.models, function(model){
+          return model.toJSON();
+        });
+        var physicalsGeoJSON = _dbRows2GeoJSON(results);
+        console.log('Success on GET /physical/:location . Returned ' +  physicalsGeoJSON.features.length + ' results.');
         res.status(200).send(physicalsGeoJSON);
         next();
       })
