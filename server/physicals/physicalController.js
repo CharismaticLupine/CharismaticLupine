@@ -2,7 +2,6 @@ var knex = require('../db_schema').knex;
 var _ = require('underscore');
 require('./physical');
 
-
 ////////////////////////////////
 // geographic utility functions
 ////////////////////////////////

@@ -1,6 +1,6 @@
 var db = require('../db_schema.js');
-require('../users/user');
-require('../physicals/physical');
+User = require('../users/user');
+Physical = require('../physicals/physical');
 
 var Comment = db.Model.extend({
   tableName: 'comments',
