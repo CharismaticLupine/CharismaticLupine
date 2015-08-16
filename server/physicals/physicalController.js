@@ -30,7 +30,7 @@ _dbRows2GeoJSON = function(results){
 module.exports = {
   getAllPhysicals: function(req, res, next){
     Physical.forge()
-      .query('select', [ 'id', 'created_at', 'updated_at', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
+      .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .fetchAll({ withRelated: ['comments', 'photos'] })
       .then(function(results){
         results = _.map(results.models, function(model){
@@ -79,7 +79,7 @@ module.exports = {
 
   getPhysicalById: function(req, res, next){
     Physical.forge({id: req.params['id']})
-      .query('select', [ 'id', 'created_at', 'updated_at', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
+      .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .fetch({ withRelated: ['comments', 'photos'] })
       .then(function(results){
         var physicalsGeoJSON = _dbRows2GeoJSON( [results.toJSON()] );
