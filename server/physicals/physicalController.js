@@ -99,35 +99,24 @@ module.exports = {
     var x = req.body.geo[0],
         y = req.body.geo[1];
 
-    // this version throws the error:  [Error: Cannot find module 'pg-native']
-    // Physical.forge()
-    //   .save({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
-    //   .then(function(response){
-    //     console.log('Success on POST /physical/:location . Created point: ' + response);
-    //     res.status(201).send(response);
-    //     next();
-    //   })
-    //   .catch(function(err){
-    //     console.log("Error on POST /physical ", err);
-    //     console.log(err.stack);
-    //     res.status(500).send(err);
-    //     next();
-    //   });
-
-    // this version fails to insert the geo column
-    // Physical.forge()
-    //   .query('insert', { 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
-    //   .save()
-    //   .then(...)
-
-
-    // define insert query as knex raw SQL
-    knex('physicals')
-      .insert({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
-      .returning([ 'id', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
-      .then(function(response){
-        var physicalsGeoJSON = _dbRows2GeoJSON(response);
-        console.log('Success on POST /physical/:location . Created point: ' +  physicalsGeoJSON.features[0]);
+    Physical.forge()
+      .save({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
+      .then(function(model){
+        // ISSUE: model.toJSON() produces invalid JSON, so must be manually patched up: https://github.com/tgriesser/bookshelf/issues/873
+        var physicalsGeoJSON = {
+          "type": "FeatureCollection",
+          "features" : [
+            {
+              "type": "Feature",
+              "properties": model.omit(['geo', 'geojson']),
+              "geometry": {
+                "type": "Point",
+                "coordinates":  [ model.toJSON().geo.bindings[0], model.toJSON().geo.bindings[1] ]
+              }
+            }
+          ]
+        };
+        console.log('Success on POST /physical/:location . Created point: ' + physicalsGeoJSON.features[0].geometry);
         res.status(201).send(physicalsGeoJSON);
         next();
       })
@@ -137,5 +126,22 @@ module.exports = {
         res.status(500).send(err);
         next();
       });
+
+    // define insert query as knex raw SQL
+    // knex('physicals')
+    //   .insert({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
+    //   .returning([ 'id', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
+    //   .then(function(response){
+    //     var physicalsGeoJSON = _dbRows2GeoJSON(response);
+    //     console.log('Success on POST /physical/:location . Created point: ' +  physicalsGeoJSON.features[0]);
+    //     res.status(201).send(physicalsGeoJSON);
+    //     next();
+    //   })
+    //   .catch(function(err){
+    //     console.log("Error on POST /physical ", err);
+    //     console.log(err.stack);
+    //     res.status(500).send(err);
+    //     next();
+    //   });
   },
 };
