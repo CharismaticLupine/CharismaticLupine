@@ -92,10 +92,13 @@ module.exports = {
     var x = req.body.geo[0],
         y = req.body.geo[1];
     // define insert query as knex raw SQL
-    knex.raw('INSERT INTO physicals (geo) VALUES ( ST_SetSRID( ST_Point(' + x + ',' + y + ') , 4326) )')
+    knex('physicals') //.raw('INSERT INTO physicals (geo) VALUES ( ST_SetSRID( ST_Point(' + x + ',' + y + ') , 4326) )')
+      .insert({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
+      .returning([ 'id', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .then(function(response){
-        console.log(response);
-        res.status(201).send(response);
+        var physicalsGeoJSON = _dbRows2GeoJSON(response);
+        console.log('Success on POST /physical/:location . Created point: ' +  physicalsGeoJSON.features[0]);
+        res.status(201).send(physicalsGeoJSON);
         next();
       })
       .catch(function(err){
@@ -104,20 +107,5 @@ module.exports = {
         res.status(500).send(err);
         next();
       });
-
-    // below code throws unlikely errors: https://github.com/tgriesser/bookshelf/issues/104
-      // so we do the above to manually make the insert
-    // var newPhysical = new Physical({ geo: knex.raw('ST_SetSRID( ST_Point(' + x + ',' + y + ') , 4326)') });
-    // var newPhysical = new Physical().set('geo', knex.raw('ST_SetSRID( ST_Point(66,55) , 4326)'));
-    // var newPhysical = new Physical({ geo: req.body.geo });
-
-    // newPhysical.save().then(function(physical){
-    //   res.status(201).send(physical.toJSON());
-    //   next();
-    // }).catch(function(err){
-    //   console.log('Error creating new Physical: ', err);
-    //   res.status(500).send(err);
-    //   next();
-    // });
   },
 };
