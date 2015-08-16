@@ -29,22 +29,8 @@ _dbRows2GeoJSON = function(results){
 
 module.exports = {
   getAllPhysicals: function(req, res, next){
-    // knex('physicals')
-    //   .select(knex.raw('ST_AsGeoJSON(geo) as geojson, created_at, updated_at'))
-    //   .then(function(results){
-    //     var physicalsGeoJSON = _dbRows2GeoJSON(results);
-    //     console.log('Success on GET /physical . Returned ' +  physicalsGeoJSON.features.length + ' results.');
-    //     res.status(200).send(physicalsGeoJSON);
-    //     next();
-    //   })
-    //   .catch(function(err){
-    //     console.log('Error on GET /physical/ : ', err);
-    //     console.log(err.stack);
-    //     res.status(500).send(err);
-    //     next();
-    //   });
     Physical.forge()
-      .query('select', ['id', 'created_at', 'updated_at', knex.raw('ST_AsGeoJSON(geo) as geojson')])
+      .query('select', [ 'id', 'created_at', 'updated_at', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .fetchAll({ withRelated: ['comments', 'photos'] })
       .then(function(results){
         results = _.map(results.models, function(model){
@@ -96,10 +82,12 @@ module.exports = {
 
   getPhysicalById: function(req, res, next){
     Physical.forge({id: req.params['id']})
+      .query('select', [ 'id', 'created_at', 'updated_at', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .fetch({ withRelated: ['comments', 'photos'] })
-      .then(function(physical){
-        console.log('Success on GET /physical/:id . Returned physical ' +  physical.id );
-        res.status(200).send({ physicals: [physical] });
+      .then(function(results){
+        var physicalsGeoJSON = _dbRows2GeoJSON( [results.toJSON()] );
+        console.log('Success on GET /physical/:id . Returned physical ' +  physicalsGeoJSON.features[0].properties.id );
+        res.status(200).send(physicalsGeoJSON);
         next();
       })
       .catch(function(err){
