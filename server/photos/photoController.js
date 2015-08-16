@@ -1,7 +1,7 @@
 var Photo = require('./photo.js');
-var bluebird = require('bluebird');
+var Promise = require('bluebird');
 var fs = require('fs');
-bluebird.promisifyAll(fs);
+Promise.promisifyAll(fs);
 
 var savePhotoToFs = function(photoId, buffer) {
   var filePath = __dirname + '/../../photos/' + photoId + '.jpg';
@@ -52,23 +52,22 @@ module.exports = {
   },
   getPhotosByPhysical: function(req, res, next) {
     var physicalId = req.params.id;
-    var result = {photos: []};
-    Photo.where({physical_id: physicalId}).fetchAll()
+    var promisedPhotos = [];
+    var result = {};
+    //fetch all photos for the desired physical
+    Photo.where({physicals_id: physicalId}).fetchAll()
       .then(function(photos){
-        
-        photos.models.forEach(function(dbPhoto){
-          getPhotoFromFs(dbPhoto.id)
-            .then(function(photo){
-              result.photos.push(photo);
-            })
-            .catch(function(err){
-              res.status(500).send(err);
-            });
+        photos.models.forEach(function(dbPhoto, index){
+          promisedPhotos.push(getPhotoFromFs(dbPhoto.id));
         });
-        res.status(200).send(result);      
+        Promise.all(promisedPhotos)
+          .then(function(promisedPhotos){
+            result.photos = promisedPhotos;
+            res.status(200).send(result);
+          });
       })
       .catch(function(err){
-        req.status(500).send(err);
+        res.status(500).send(err);
       });
 
     
