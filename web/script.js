@@ -29,26 +29,32 @@ var snap = angular.module('snap', ["leaflet-directive"])
 
     return { getBbox: getBbox };
   }])
-  .factory('Map', ['Physicals', function(Physicals){
-    var loadBbox = function(bbox){
-      return Physicals.getBbox(bbox);
+  .factory('Map', ['Physicals', 'leafletData', function(Physicals, leafletData){
+    var Map = {
+      loadBbox: function(bbox){
+        return Physicals.getBbox(bbox);
+      },
+
+      geoJSON2Markers: function(geojson){
+        var markers = {}
+        geojson.features.forEach(function(feature){
+          markers[feature.properties.id] = {
+            lat: feature.geometry.coordinates[1],
+            lng: feature.geometry.coordinates[0],
+          };
+        });
+        return markers;
+      },
+
+      load: function(){
+        return leafletData.getMap().then(function(map){
+          var bounds = map.getBounds();
+          return Map.loadBbox([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()])
+        });
+      },
     };
 
-    var geoJSON2Markers = function(geojson){
-      var markers = {}
-      geojson.features.forEach(function(feature){
-        markers[feature.properties.id] = {
-          lat: feature.geometry.coordinates[1],
-          lng: feature.geometry.coordinates[0],
-        };
-      });
-      return markers;
-    };
-
-    return { 
-      loadBbox: loadBbox,
-      geoJSON2Markers: geoJSON2Markers
-    };
+    return Map;
   }])
   .controller('HeaderCtrl', ['$scope', '$http', function ($scope, $http) {
     $scope.userName = 'Martha Stewart';
@@ -73,23 +79,18 @@ var snap = angular.module('snap', ["leaflet-directive"])
         }
       });
 
-      $scope.loadPoints = function(){
-        leafletData.getMap()
-          .then(function(map){
-            var bounds = map.getBounds();
-            return Map.loadBbox([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()])
-          })
-          .then(function(geojson){
-            angular.extend($scope, {
-              markers: angular.copy(Map.geoJSON2Markers(geojson))
-            });
+      $scope.refresh = function(){
+        Map.load().then(function(geojson){
+          angular.extend($scope, {
+            markers: angular.copy(Map.geoJSON2Markers(geojson))
           });
+        });
       };
 
-      $scope.loadPoints();
+      $scope.refresh();
 
       $scope.$on('leafletDirectiveMap.moveend', function(e){
-        $scope.loadPoints();
+        $scope.refresh();
       });
     }
   ])
