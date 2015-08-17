@@ -10,19 +10,33 @@ var _ = require('underscore');
 ////////////////////////////////
   // move these to a new module?
 
-_dbRows2GeoJSON = function(results){
-  // expects an array of db rows, as returned by a Knex query
-    // TODO: this should be reformatted to fit Bookshelf's Model.fetchAll() returned array of models,
-    // once we jettison this cludgy reliance on raw knex queries
+_models2GeoJSON = function(models){
+  // expects a bookshelf model or an array of bookshelf models
+    // returns the a geoJSON FeatureCollection representation of that/those model(s)
+    // expects model.get('geojson') to be a valid stringified geoJSON geometry object, e.g. as returned by PostGIS ST_AsGeoJSON(...)
+  if( !Array.isArray(models) ){
+    models = [models];
+  }
+  var features = models.map(function(model){
+    // parse geoJSON, in case it's stringified
+    if(typeof model.get('geojson') === 'string'){
+      try { 
+        model.set('geojson', JSON.parse(model.get('geojson')) )
+      }catch(error){
+        model.set('geojson', null);
+      }
+    }
+
+    return {
+      "type": "Feature",
+      "properties": model.omit(['geo', 'geojson']),
+      "geometry": model.get('geojson')
+    };
+  });
+
   return {
     "type": "FeatureCollection",
-    "features" : results.map(function(result){
-      return {
-        "type": "Feature",
-        "properties": _.omit(result, ['geo', 'geojson']),
-        "geometry": JSON.parse(result.geojson)
-      };
-    })
+    "features" : features
   };
 };
 
@@ -32,11 +46,8 @@ module.exports = {
     Physical.forge()
       .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .fetchAll({ withRelated: ['comments', 'photos'] })
-      .then(function(results){
-        results = _.map(results.models, function(model){
-          return model.toJSON();
-        });
-        var physicalsGeoJSON = _dbRows2GeoJSON(results);
+      .then(function(collection){
+        var physicalsGeoJSON = _models2GeoJSON(collection.models);
         console.log('Success on GET /physical . Returned ' +  physicalsGeoJSON.features.length + ' results.');
         res.status(200).send(physicalsGeoJSON);
         next();
@@ -60,11 +71,8 @@ module.exports = {
       .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .query('where', knex.raw('ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ? )', [x, y, proximity]))
       .fetchAll({ withRelated: ['comments', 'photos'] })
-      .then(function(results){
-        results = _.map(results.models, function(model){
-          return model.toJSON();
-        });
-        var physicalsGeoJSON = _dbRows2GeoJSON(results);
+      .then(function(collection){
+        var physicalsGeoJSON = _models2GeoJSON(collection.models);
         console.log('Success on GET /physical/:location . Returned ' +  physicalsGeoJSON.features.length + ' results.');
         res.status(200).send(physicalsGeoJSON);
         next();
@@ -81,8 +89,8 @@ module.exports = {
     Physical.forge({id: req.params['id']})
       .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .fetch({ withRelated: ['comments', 'photos'] })
-      .then(function(results){
-        var physicalsGeoJSON = _dbRows2GeoJSON( [results.toJSON()] );
+      .then(function(model){
+        var physicalsGeoJSON = _models2GeoJSON(model);
         console.log('Success on GET /physical/:id . Returned physical ' +  physicalsGeoJSON.features[0].properties.id );
         res.status(200).send(physicalsGeoJSON);
         next();
@@ -132,7 +140,7 @@ module.exports = {
     //   .insert({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
     //   .returning([ 'id', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
     //   .then(function(response){
-    //     var physicalsGeoJSON = _dbRows2GeoJSON(response);
+    //     var physicalsGeoJSON = _models2GeoJSON(response);
     //     console.log('Success on POST /physical/:location . Created point: ' +  physicalsGeoJSON.features[0]);
     //     res.status(201).send(physicalsGeoJSON);
     //     next();
