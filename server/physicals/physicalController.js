@@ -14,6 +14,12 @@ _models2GeoJSON = function(models){
   // expects a bookshelf model or an array of bookshelf models
     // returns the a geoJSON FeatureCollection representation of that/those model(s)
     // expects model.get('geojson') to be a valid stringified geoJSON geometry object, e.g. as returned by PostGIS ST_AsGeoJSON(...)
+  if( models === null || models === undefined ){
+    return {
+      "type": "FeatureCollection",
+      "features" : []
+    };
+  }
   if( !Array.isArray(models) ){
     models = [models];
   }
@@ -47,9 +53,13 @@ module.exports = {
       .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .fetchAll({ withRelated: ['comments', 'photos'] })
       .then(function(collection){
-        var physicalsGeoJSON = _models2GeoJSON(collection.models);
-        console.log('Success on GET /physical . Returned ' +  physicalsGeoJSON.features.length + ' results.');
-        res.status(200).send(physicalsGeoJSON);
+        var geoJSON = _models2GeoJSON(collection.models);
+        if(geoJSON.features.length === 0){
+          console.log('Success on GET /physical . Did not retrieve any models.' );
+        }else{
+          console.log('Success on GET /physical . Returned ' +  geoJSON.features.length + ' results.');
+        }
+        res.status(200).send(geoJSON);
         next();
       })
       .catch(function(err){
@@ -72,9 +82,13 @@ module.exports = {
       .query('where', knex.raw('ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ? )', [x, y, proximity]))
       .fetchAll({ withRelated: ['comments', 'photos'] })
       .then(function(collection){
-        var physicalsGeoJSON = _models2GeoJSON(collection.models);
-        console.log('Success on GET /physical/:location . Returned ' +  physicalsGeoJSON.features.length + ' results.');
-        res.status(200).send(physicalsGeoJSON);
+        var geoJSON = _models2GeoJSON(collection.models);
+        if(geoJSON.features.length === 0){
+          console.log('Success on GET /physical/:location . Did not retrieve any models.' );
+        }else{
+          console.log('Success on GET /physical/:location . Returned ' +  geoJSON.features.length + ' results.');
+        }
+        res.status(200).send(geoJSON);
         next();
       })
       .catch(function(err){
@@ -90,13 +104,17 @@ module.exports = {
       .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .fetch({ withRelated: ['comments', 'photos'] })
       .then(function(model){
-        var physicalsGeoJSON = _models2GeoJSON(model);
-        console.log('Success on GET /physical/:id . Returned physical ' +  physicalsGeoJSON.features[0].properties.id );
-        res.status(200).send(physicalsGeoJSON);
+        var geoJSON = _models2GeoJSON(model);
+        if(geoJSON.features.length === 0){
+          console.log('Success on GET /physical/id/:id . Did not retrieve any physical models.' );
+        }else{
+          console.log('Success on GET /physical/id/:id . Returned physical ' +  geoJSON.features[0].properties.id );
+        }
+        res.status(200).send(geoJSON);
         next();
       })
       .catch(function(err){
-        console.log("Error on GET /physical/:id : ", err);
+        console.log("Error on GET /physical/id/:id : ", err);
         console.log(err.stack);
         res.status(500).send(err);
         next();
@@ -111,7 +129,7 @@ module.exports = {
       .save({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
       .then(function(model){
         // ISSUE: model.toJSON() produces invalid JSON, so must be manually patched up: https://github.com/tgriesser/bookshelf/issues/873
-        var physicalsGeoJSON = {
+        var geoJSON = {
           "type": "FeatureCollection",
           "features" : [
             {
@@ -124,8 +142,8 @@ module.exports = {
             }
           ]
         };
-        console.log('Success on POST /physical/:location . Created point id: ' + physicalsGeoJSON.features[0].properties.id);
-        res.status(201).send(physicalsGeoJSON);
+        console.log('Success on POST /physical/:location . Created point id: ' + geoJSON.features[0].properties.id);
+        res.status(201).send(geoJSON);
         next();
       })
       .catch(function(err){
@@ -140,9 +158,9 @@ module.exports = {
     //   .insert({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
     //   .returning([ 'id', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
     //   .then(function(response){
-    //     var physicalsGeoJSON = _models2GeoJSON(response);
-    //     console.log('Success on POST /physical/:location . Created point: ' +  physicalsGeoJSON.features[0]);
-    //     res.status(201).send(physicalsGeoJSON);
+    //     var geoJSON = _models2GeoJSON(response);
+    //     console.log('Success on POST /physical/:location . Created point: ' +  geoJSON.features[0]);
+    //     res.status(201).send(geoJSON);
     //     next();
     //   })
     //   .catch(function(err){
