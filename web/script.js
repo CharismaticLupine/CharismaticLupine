@@ -46,7 +46,13 @@ var app = {
     });
   },
 
-
+  getBbox: function(){
+    var xmin = app.map.getBounds().getWest(),
+        ymin = app.map.getBounds().getSouth(),
+        xmax = app.map.getBounds().getEast(),
+        ymax = app.map.getBounds().getNorth();
+    return [xmin, ymin, xmax, ymax];
+  }
 };
 
 window.app = app;

@@ -121,6 +121,35 @@ module.exports = {
       });
   },
 
+  getPhysicalsByBbox: function(req, res, next){
+    var params = req.params['bbox'].split(','),
+        xmin = params[0],
+        ymin = params[1],
+        xmax = params[2],
+        ymax = params[3];
+
+    Physical.forge()
+      .query('select', ['*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
+      .query('where', knex.raw('ST_MakeEnvelope(?,?,?,?, 4326) ~ geo', [xmin, ymin, xmax, ymax]) )
+      .fetchAll({ withRelated: ['comments', 'photos'] })
+      .then(function(collection){
+        var geoJSON = _models2GeoJSON(collection.models);
+        if(geoJSON.features.length === 0){
+          console.log('Success on GET /physical/bbox/:bbox . Did not retrieve any models.' );
+        }else{
+          console.log('Success on GET /physical/bbox/:bbox . Returned ' +  geoJSON.features.length + ' results.');
+        }
+        res.status(200).send(geoJSON);
+        next();
+      })
+      .catch(function(err){
+        console.log('Error on GET /physical/bbox/:bbox : ', err);
+        console.log(err.stack);
+        res.status(500).send(err);
+        next();
+      });
+  },
+
   createNewPhysical: function(req, res, next){
     var x = req.body.geo[0],
         y = req.body.geo[1];
