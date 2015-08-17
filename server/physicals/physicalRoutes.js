@@ -8,8 +8,10 @@ module.exports = function(router){
   router.route('/id/:id')
     .get(physicalController.getPhysicalById);
     
+  router.route('/bbox/:bbox')
+    .get(physicalController.getPhysicalsByBbox);
+
   router.route('/:location')
     .get(physicalController.getNearbyPhysicals);
 
-    
 };
