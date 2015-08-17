@@ -57,7 +57,7 @@ count=1
 for request in ${physicalInserts[*]}; do
   echo insert data: "${request}"
   curl -H "Content-Type: application/json" -X POST -d "${request}" http://localhost:8000/physical
-  http -f POST http://localhost:8000/photo x-access-token:"${token}" photo@~/Dropbox/ProgrammingStuff/HR/Greenfield/CharismaticLupine/samplePhoto/1.jpg physical:="${count}"
+  http -f POST http://localhost:8000/photo x-access-token:"${token}" photo@samplePhoto/1.jpg physical:="${count}"
   http POST http://localhost:8000/comments x-access-token:"${token}" physical:="${count}" text="HELLO THIS IS A COMMENT"
   ((count++))
 done
