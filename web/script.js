@@ -56,9 +56,10 @@ var snap = angular.module('snap', ["leaflet-directive"])
   .controller('MapCtrl', [
     '$scope', 
     'leafletData', 
-    'Map', 
+    'Map',
+    'leafletEvents',
     'DOMelements',
-    function ($scope, leafletData, Map, DOM) {
+    function ($scope, leafletData, Map, leafletEvents, DOM) {
       $scope.DOM = DOM;
 
       angular.extend($scope, {
@@ -72,15 +73,24 @@ var snap = angular.module('snap', ["leaflet-directive"])
         }
       });
 
-      $scope.loadPoints = function(bbox){
-        Map.loadBbox(bbox).then(function(geojson){
-          angular.extend($scope, {
-            markers: angular.copy(Map.geoJSON2Markers(geojson))
+      $scope.loadPoints = function(){
+        leafletData.getMap()
+          .then(function(map){
+            var bounds = map.getBounds();
+            return Map.loadBbox([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()])
+          })
+          .then(function(geojson){
+            angular.extend($scope, {
+              markers: angular.copy(Map.geoJSON2Markers(geojson))
+            });
           });
-        });
       };
 
-      $scope.loadPoints([-122.5579833984375,37.75917994619179,-122.34203338623047,37.800832415970085]);
+      $scope.loadPoints();
+
+      $scope.$on('leafletDirectiveMap.moveend', function(e){
+        $scope.loadPoints();
+      });
     }
   ])
   .controller('SidebarCtrl', ['$scope', 'Physicals', function($scope, Physicals){
