@@ -3,9 +3,11 @@
   # server must be running
   # if intalled, can also run ogr2ogr to load bulk data: http://www.gdal.org/drv_geojson.html
 
-  # how to fake credentials?
+  #MUST run reInit before running this
+  #This script requires 'httpie' (brew install httpie)
 
-requests=(
+
+physicalInserts=(
   '{"geo":[-122.426536560196979,37.790584627350285]}'
   '{"geo":[-122.461901654655492,37.771520631118747]}'
   '{"geo":[-122.423773662192403,37.784506251740233]}'
@@ -45,7 +47,21 @@ requests=(
   '{"geo":[-122.484004838692073,37.774559818923700]}'
 )
 
-for request in ${requests[*]}; do
+#Create and sign-in user assing JWT to "token" variable
+
+user=`http POST http://localhost:8000/users/signup username="Test" password=Test`
+echo "${user}"
+token=`echo "${user}" | cut -d ":" -f 2 | cut -d "\"" -f 2 |cut -d "\"" -f 1`
+
+count=1
+for request in ${physicalInserts[*]}; do
   echo insert data: "${request}"
   curl -H "Content-Type: application/json" -X POST -d "${request}" http://localhost:8000/physical
+  http -f POST http://localhost:8000/photo x-access-token:"${token}" photo@~/Dropbox/ProgrammingStuff/HR/Greenfield/CharismaticLupine/samplePhoto/1.jpg physical:="${count}"
+  http POST http://localhost:8000/comments x-access-token:"${token}" physical:="${count}" text="HELLO THIS IS A COMMENT"
+  ((count++))
 done
+
+
+
+
