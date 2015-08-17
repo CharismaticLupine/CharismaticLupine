@@ -124,7 +124,7 @@ module.exports = {
             }
           ]
         };
-        console.log('Success on POST /physical/:location . Created point: ' + physicalsGeoJSON.features[0].geometry);
+        console.log('Success on POST /physical/:location . Created point id: ' + physicalsGeoJSON.features[0].properties.id);
         res.status(201).send(physicalsGeoJSON);
         next();
       })
