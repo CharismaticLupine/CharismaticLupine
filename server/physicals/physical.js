@@ -1,7 +1,7 @@
 var db = require('../db_schema.js');
 var knex = db.knex;
-var Photo = require('../photos/photo');
-var Comment = require('../comments/comment');
+require('../photos/photo');
+require('../comments/comment');
 
 var Physical = db.Model.extend({
   tableName: 'physicals',
@@ -12,11 +12,11 @@ var Physical = db.Model.extend({
   },
 
   photos: function(){
-    return this.hasMany(Photo);
+    return this.hasMany(Photo, 'physicals_id');
   },
 
   comments: function(){
-    return this.hasMany(Comment);
+    return this.hasMany(Comment, 'physicals_id');
   },
 
   parseLocation: function(model, attributes, options){
@@ -42,4 +42,4 @@ var Physical = db.Model.extend({
   }
 });
 
-module.exports = Physical;
+module.exports = db.model('Physical', Physical);

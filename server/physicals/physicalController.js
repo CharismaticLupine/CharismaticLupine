@@ -1,37 +1,50 @@
 var knex = require('../db_schema').knex;
-var Physical = require('./physical');
+var _ = require('underscore');
+require('./physical');
+
+
+////////////////////////////////
+// geographic utility functions
+////////////////////////////////
+  // move these to a new module?
+
+_dbRows2GeoJSON = function(results){
+  // expects an array of db rows, as returned by a Knex query
+    // TODO: this should be reformatted to fit Bookshelf's Model.fetchAll() returned array of models,
+    // once we jettison this cludgy reliance on raw knex queries
+  return {
+    "type": "FeatureCollection",
+    "features" : results.map(function(result){
+      return {
+        "type": "Feature",
+        "properties": _.omit(result, ['geo', 'geojson']),
+        "geometry": JSON.parse(result.geojson)
+      };
+    })
+  };
+};
+
 
 module.exports = {
   getAllPhysicals: function(req, res, next){
     knex('physicals')
-      .select(knex.raw('ST_AsGeoJSON(geo) as geo, created_at, updated_at'))
+      .select(knex.raw('ST_AsGeoJSON(geo) as geojson, created_at, updated_at'))
       .then(function(results){
-        var physicalsGeoJSON = {
-          "type": "FeatureCollection",
-          "features" : results.map(function(result){
-            return {
-              "type": "Feature",
-              "properties": {
-                "created_at": result.created_at,
-                "updated_at": result.updated_at
-              },
-              "geometry": JSON.parse(result.geo)
-            };
-          })
-        };
+        var physicalsGeoJSON = _dbRows2GeoJSON(results);
         console.log('Success on GET /physical . Returned ' +  physicalsGeoJSON.features.length + ' results.');
         res.status(200).send(physicalsGeoJSON);
         next();
       })
       .catch(function(err){
         console.log('Error on GET /physical/ : ', err);
+        console.log(err.stack);
         res.status(500).send(err);
         next();
       });
   },
 
   getNearbyPhysicals: function(req, res, next){
-    var proximity = 50, // meters
+    var proximity = 160, // meters // this should be lowered, probably, to something like 20 meters (depending on avg GPS error, yeah?)
         // x = JSON.parse(req.params['longitude'])[0],
         // y = JSON.parse(req.params['latitude'])[1];
         location = req.params['location'].split(',');
@@ -46,16 +59,32 @@ module.exports = {
     // above code throws unlikely errors: https://github.com/tgriesser/bookshelf/issues/104
       // so we do the below to manually make the select
       // use ::geography to cast from geometry to geography type, so that distance measurements are correct
-    knex.raw('SELECT * FROM physicals WHERE ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(' + x + ',' + y + '), 4326)::geography, ' + proximity + ' )')
-      .then(function(physicals){
-        console.log('Success on GET /physical/:location . Returned ' +  physicals.rows.length + ' results.');
-        res.status(200).send({physicals: physicals.rows});
+    knex.raw('SELECT *, ST_AsGeoJSON(geo) as geojson FROM physicals WHERE ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(' + x + ',' + y + '), 4326)::geography, ' + proximity + ' )')
+      .then(function(results){
+        var physicalsGeoJSON = _dbRows2GeoJSON(results.rows);
+        console.log('Success on GET /physical/:location . Returned ' +  physicalsGeoJSON.length + ' results.');
+        res.status(200).send(physicalsGeoJSON);
         next();
       })
       .catch(function(err){
         console.log('Error on GET /physical/:location : ', err);
+        console.log(err.stack);
         res.status(500).send(err);
         next();
+      });
+  },
+
+  getPhysicalById: function(req, res, next){
+    Physical.forge({id: req.params['id']})
+      .fetch({ withRelated: ['comments', 'photos'] })
+      .then(function(physical){
+        console.log('Success on GET /physical/:id . Returned physical ' +  physical.id );
+        res.status(200).send({ physicals: [physical] });
+      })
+      .catch(function(err){
+        console.log("Error on GET /physical/:id : ", err);
+        console.log(err.stack);
+        res.status(500).send(err);
       });
   },
 
@@ -70,7 +99,8 @@ module.exports = {
         next();
       })
       .catch(function(err){
-        console.log(err);
+        console.log("Error on POST /physical ", err);
+        console.log(err.stack);
         res.status(500).send(err);
         next();
       });
@@ -89,5 +119,5 @@ module.exports = {
     //   res.status(500).send(err);
     //   next();
     // });
-  }
+  },
 };

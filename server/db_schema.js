@@ -10,6 +10,8 @@ var knex = require('knex')({
 });
 
 var db = require('bookshelf')(knex);
+// registry plugin to help with circular dependencies: https://github.com/tgriesser/bookshelf/wiki/Plugin:-Model-Registry
+db.plugin('registry');
 
 db.knex.schema.hasTable('physicals').then(function(exists){
   if(!exists){

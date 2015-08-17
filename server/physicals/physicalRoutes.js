@@ -5,7 +5,11 @@ module.exports = function(router){
     .post(physicalController.createNewPhysical)
     .get(physicalController.getAllPhysicals);
 
+  router.route('/id/:id')
+    .get(physicalController.getPhysicalById);
+    
   router.route('/:location')
     .get(physicalController.getNearbyPhysicals);
+
     
 };
