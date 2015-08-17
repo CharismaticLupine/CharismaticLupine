@@ -35,7 +35,7 @@ _models2GeoJSON = function(models){
 
     return {
       "type": "Feature",
-      "properties": model.omit(['geo', 'geojson']),
+      "properties": _.omit(model.toJSON(), ['geo', 'geojson']), // using .toJSON() ensures that any model associations are preserved
       "geometry": model.get('geojson')
     };
   });
