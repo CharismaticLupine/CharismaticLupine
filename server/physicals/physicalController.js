@@ -1,36 +1,53 @@
-var knex = require('../db_schema').knex;
-var _ = require('underscore');
+require('../photos/photo');
+require('../comments/comment');
 require('./physical');
 
+var knex = require('../db_schema').knex;
+var _ = require('underscore');
 
 ////////////////////////////////
 // geographic utility functions
 ////////////////////////////////
   // move these to a new module?
 
-_dbRows2GeoJSON = function(results){
-  // expects an array of db rows, as returned by a Knex query
-    // TODO: this should be reformatted to fit Bookshelf's Model.fetchAll() returned array of models,
-    // once we jettison this cludgy reliance on raw knex queries
+_models2GeoJSON = function(models){
+  // expects a bookshelf model or an array of bookshelf models
+    // returns the a geoJSON FeatureCollection representation of that/those model(s)
+    // expects model.get('geojson') to be a valid stringified geoJSON geometry object, e.g. as returned by PostGIS ST_AsGeoJSON(...)
+  if( !Array.isArray(models) ){
+    models = [models];
+  }
+  var features = models.map(function(model){
+    // parse geoJSON, in case it's stringified
+    if(typeof model.get('geojson') === 'string'){
+      try { 
+        model.set('geojson', JSON.parse(model.get('geojson')) )
+      }catch(error){
+        model.set('geojson', null);
+      }
+    }
+
+    return {
+      "type": "Feature",
+      "properties": model.omit(['geo', 'geojson']),
+      "geometry": model.get('geojson')
+    };
+  });
+
   return {
     "type": "FeatureCollection",
-    "features" : results.map(function(result){
-      return {
-        "type": "Feature",
-        "properties": _.omit(result, ['geo', 'geojson']),
-        "geometry": JSON.parse(result.geojson)
-      };
-    })
+    "features" : features
   };
 };
 
 
 module.exports = {
   getAllPhysicals: function(req, res, next){
-    knex('physicals')
-      .select(knex.raw('ST_AsGeoJSON(geo) as geojson, created_at, updated_at'))
-      .then(function(results){
-        var physicalsGeoJSON = _dbRows2GeoJSON(results);
+    Physical.forge()
+      .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
+      .fetchAll({ withRelated: ['comments', 'photos'] })
+      .then(function(collection){
+        var physicalsGeoJSON = _models2GeoJSON(collection.models);
         console.log('Success on GET /physical . Returned ' +  physicalsGeoJSON.features.length + ' results.');
         res.status(200).send(physicalsGeoJSON);
         next();
@@ -44,25 +61,19 @@ module.exports = {
   },
 
   getNearbyPhysicals: function(req, res, next){
-    var proximity = 160, // meters // this should be lowered, probably, to something like 20 meters (depending on avg GPS error, yeah?)
-        // x = JSON.parse(req.params['longitude'])[0],
-        // y = JSON.parse(req.params['latitude'])[1];
-        location = req.params['location'].split(',');
-    var x = location[0];
-    var y = location[1];
-    // Physical.fetchAll({withRelated: ['user', 'comment']})
-    //   .then(function(physicals){
-    //     res.status(200).send(physicals.toJSON());
-    //     next();
-    //   });
+    var proximity = 180, // meters // this should be lowered, probably, to something like 20 meters (depending on avg GPS error, yeah?)
+        location = req.params['location'].split(','),
+        x = location[0],
+        y = location[1];
 
-    // above code throws unlikely errors: https://github.com/tgriesser/bookshelf/issues/104
-      // so we do the below to manually make the select
-      // use ::geography to cast from geometry to geography type, so that distance measurements are correct
-    knex.raw('SELECT *, ST_AsGeoJSON(geo) as geojson FROM physicals WHERE ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(' + x + ',' + y + '), 4326)::geography, ' + proximity + ' )')
-      .then(function(results){
-        var physicalsGeoJSON = _dbRows2GeoJSON(results.rows);
-        console.log('Success on GET /physical/:location . Returned ' +  physicalsGeoJSON.length + ' results.');
+    // use ::geography to cast from geometry to geography type, so that distance measurements are correct
+    Physical.forge()
+      .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
+      .query('where', knex.raw('ST_DWithin( physicals.geo::geography, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ? )', [x, y, proximity]))
+      .fetchAll({ withRelated: ['comments', 'photos'] })
+      .then(function(collection){
+        var physicalsGeoJSON = _models2GeoJSON(collection.models);
+        console.log('Success on GET /physical/:location . Returned ' +  physicalsGeoJSON.features.length + ' results.');
         res.status(200).send(physicalsGeoJSON);
         next();
       })
@@ -76,26 +87,45 @@ module.exports = {
 
   getPhysicalById: function(req, res, next){
     Physical.forge({id: req.params['id']})
+      .query('select', [ '*', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
       .fetch({ withRelated: ['comments', 'photos'] })
-      .then(function(physical){
-        console.log('Success on GET /physical/:id . Returned physical ' +  physical.id );
-        res.status(200).send({ physicals: [physical] });
+      .then(function(model){
+        var physicalsGeoJSON = _models2GeoJSON(model);
+        console.log('Success on GET /physical/:id . Returned physical ' +  physicalsGeoJSON.features[0].properties.id );
+        res.status(200).send(physicalsGeoJSON);
+        next();
       })
       .catch(function(err){
         console.log("Error on GET /physical/:id : ", err);
         console.log(err.stack);
         res.status(500).send(err);
+        next();
       });
   },
 
   createNewPhysical: function(req, res, next){
     var x = req.body.geo[0],
         y = req.body.geo[1];
-    // define insert query as knex raw SQL
-    knex.raw('INSERT INTO physicals (geo) VALUES ( ST_SetSRID( ST_Point(' + x + ',' + y + ') , 4326) )')
-      .then(function(response){
-        console.log(response);
-        res.status(201).send(response);
+
+    Physical.forge()
+      .save({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
+      .then(function(model){
+        // ISSUE: model.toJSON() produces invalid JSON, so must be manually patched up: https://github.com/tgriesser/bookshelf/issues/873
+        var physicalsGeoJSON = {
+          "type": "FeatureCollection",
+          "features" : [
+            {
+              "type": "Feature",
+              "properties": model.omit(['geo', 'geojson']),
+              "geometry": {
+                "type": "Point",
+                "coordinates":  [ model.toJSON().geo.bindings[0], model.toJSON().geo.bindings[1] ]
+              }
+            }
+          ]
+        };
+        console.log('Success on POST /physical/:location . Created point id: ' + physicalsGeoJSON.features[0].properties.id);
+        res.status(201).send(physicalsGeoJSON);
         next();
       })
       .catch(function(err){
@@ -105,19 +135,21 @@ module.exports = {
         next();
       });
 
-    // below code throws unlikely errors: https://github.com/tgriesser/bookshelf/issues/104
-      // so we do the above to manually make the insert
-    // var newPhysical = new Physical({ geo: knex.raw('ST_SetSRID( ST_Point(' + x + ',' + y + ') , 4326)') });
-    // var newPhysical = new Physical().set('geo', knex.raw('ST_SetSRID( ST_Point(66,55) , 4326)'));
-    // var newPhysical = new Physical({ geo: req.body.geo });
-
-    // newPhysical.save().then(function(physical){
-    //   res.status(201).send(physical.toJSON());
-    //   next();
-    // }).catch(function(err){
-    //   console.log('Error creating new Physical: ', err);
-    //   res.status(500).send(err);
-    //   next();
-    // });
+    // define insert query as knex raw SQL
+    // knex('physicals')
+    //   .insert({ 'geo': knex.raw('ST_SetSRID( ST_Point(?, ?) , 4326)', [x, y]) })
+    //   .returning([ 'id', knex.raw('ST_AsGeoJSON(geo) as geojson') ])
+    //   .then(function(response){
+    //     var physicalsGeoJSON = _models2GeoJSON(response);
+    //     console.log('Success on POST /physical/:location . Created point: ' +  physicalsGeoJSON.features[0]);
+    //     res.status(201).send(physicalsGeoJSON);
+    //     next();
+    //   })
+    //   .catch(function(err){
+    //     console.log("Error on POST /physical ", err);
+    //     console.log(err.stack);
+    //     res.status(500).send(err);
+    //     next();
+    //   });
   },
 };
