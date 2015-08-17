@@ -5,9 +5,15 @@ var snap = angular.module('snap', ["angular-mapbox"])
       // e.g. the header and map elements
     var headerHeight = function(){
       return angular.element(document.querySelector('header'))[0].offsetHeight;
-    }
+    };
+    var sidebarWidth = function(){
+      return angular.element(document.querySelector('#sidebar'))[0].offsetWidth;
+    };
 
-    return { headerHeight: headerHeight }; 
+    return { 
+      headerHeight: headerHeight,
+      sidebarWidth: sidebarWidth
+    }; 
   })
   .factory('Physicals', ['$http', function($http){
     var get = function(){
@@ -33,13 +39,15 @@ var snap = angular.module('snap', ["angular-mapbox"])
     function ($scope, mapboxService, Physicals, DOM) {
       mapboxService.init({ accessToken: 'pk.eyJ1IjoiamFtZXMtbGFuZS1jb25rbGluZyIsImEiOiJ3RHBOc1BZIn0.edCFqVis7qgHPRgdq0WYsA' });
       $scope.DOM = DOM;
+      $scope.geojson = {};
+
       Physicals.get().then(function(data){
         $scope.geojson = data;
       });
     }
   ])
-  .controller('SidebarCtrl', ['$scope', function($scope){
-    
+  .controller('SidebarCtrl', ['$scope', 'Physicals', function($scope, Physicals){
+
   }])
 
 // (function(){
