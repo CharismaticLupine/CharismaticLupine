@@ -8,7 +8,8 @@ module.exports = {
     Comment.where({physicals_id: physicalId}).fetchAll()
       .then(function(comments){
         console.log('Success on GET /comments/:id. Returned ' + comments.models.length + ' results.');
-        res.status(200).send(comments.models);
+        var coms = {list: comments.models};
+        res.status(200).send(coms);
         next();
       })
       .catch(function(err){
