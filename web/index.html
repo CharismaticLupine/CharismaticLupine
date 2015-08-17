@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Snap</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,15 +20,9 @@
     </header>
 
     <div ng-controller="MapCtrl">
-      <mapbox map-id="james-lane-conkling.5630f970" lat="37.78" lng="-122.45" zoom="13" ng-style="{ 'top': DOM.headerHeight() + 'px', 'right': DOM.sidebarWidth() + 'px' }">
-        <div id='find'>{{headerHeight}}</div>
-        <div ng-repeat="feature in geojson.features">
-          <marker lat="{{feature.geometry.coordinates[1]}}" lng="{{feature.geometry.coordinates[0]}}" color="#39cccc">
-            <div><em>Created At: {{feature.properties.created_at}}</em></div>
-            <div><em>Updated At: {{feature.properties.updated_at}}</em></div>
-          </marker>
-        </div>
-      </mapbox>
+      <leaflet defaults="defaults" center="center" markers="markers"
+               ng-style="{ 'top': DOM.headerHeight() + 'px', 'left': 0, 'bottom': 0, 'right': DOM.sidebarWidth() + 'px', 'position': 'absolute' }">
+      </leaflet>
     </div>
 
     <div ng-controller="SidebarCtrl">
@@ -40,9 +34,11 @@
   </div>
 
   <script src="bower_components/angular/angular.js"></script>
+<!--   <script src="bower_components/underscore/underscore.js"></script>  
+  <script src="bower_components/angular-underscore/angular-underscore.js"></script> -->
   <script src="bower_components/d3/d3.js" charset="utf-8"></script>
-  <script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
-  <script src="bower_components/angular-mapbox/dist/angular-mapbox.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+  <script src="bower_components/angular-leaflet-directive/dist/angular-leaflet-directive.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

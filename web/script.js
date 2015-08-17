@@ -1,5 +1,5 @@
 
-var snap = angular.module('snap', ["angular-mapbox"])
+var snap = angular.module('snap', ["leaflet-directive"])
   .factory('DOMelements', function(){
     // useful for setting an element's absolute positioning based on a dynamically positioned element
       // e.g. the header and map elements
@@ -16,34 +16,71 @@ var snap = angular.module('snap', ["angular-mapbox"])
     }; 
   })
   .factory('Physicals', ['$http', function($http){
-    var get = function(){
+    var getBbox = function(bbox){
+      // bbox should be an array of [xmin, ymin, xmax, ymax]
       return $http({
         method: 'GET',
-        url: 'http://localhost:8000/physical'
+        url: 'http://localhost:8000/physical/bbox/' + bbox.join(',')
       })
       .then(function(res){
         return res.data;
       });
     };
 
-    return { get: get };
+    return { getBbox: getBbox };
+  }])
+  .factory('Map', ['Physicals', function(Physicals){
+    var loadBbox = function(bbox){
+      return Physicals.getBbox(bbox);
+    };
+
+    var geoJSON2Markers = function(geojson){
+      var markers = {}
+      geojson.features.forEach(function(feature){
+        markers[feature.properties.id] = {
+          lat: feature.geometry.coordinates[1],
+          lng: feature.geometry.coordinates[0],
+        };
+      });
+      return markers;
+    };
+
+    return { 
+      loadBbox: loadBbox,
+      geoJSON2Markers: geoJSON2Markers
+    };
   }])
   .controller('HeaderCtrl', ['$scope', '$http', function ($scope, $http) {
     $scope.userName = 'Martha Stewart';
   }])
   .controller('MapCtrl', [
     '$scope', 
-    'mapboxService', 
-    'Physicals', 
+    'leafletData', 
+    'Map', 
     'DOMelements',
-    function ($scope, mapboxService, Physicals, DOM) {
-      mapboxService.init({ accessToken: 'pk.eyJ1IjoiamFtZXMtbGFuZS1jb25rbGluZyIsImEiOiJ3RHBOc1BZIn0.edCFqVis7qgHPRgdq0WYsA' });
+    function ($scope, leafletData, Map, DOM) {
       $scope.DOM = DOM;
-      $scope.geojson = {};
 
-      Physicals.get().then(function(data){
-        $scope.geojson = data;
+      angular.extend($scope, {
+        defaults: {
+          tileLayer: "https://api.mapbox.com/v4/james-lane-conkling.5630f970/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiamFtZXMtbGFuZS1jb25rbGluZyIsImEiOiJ3RHBOc1BZIn0.edCFqVis7qgHPRgdq0WYsA",
+        },
+        center: {
+          lat: 37.78,
+          lng: -122.45,
+          zoom: 13
+        }
       });
+
+      $scope.loadPoints = function(bbox){
+        Map.loadBbox(bbox).then(function(geojson){
+          angular.extend($scope, {
+            markers: angular.copy(Map.geoJSON2Markers(geojson))
+          });
+        });
+      };
+
+      $scope.loadPoints([-122.5579833984375,37.75917994619179,-122.34203338623047,37.800832415970085]);
     }
   ])
   .controller('SidebarCtrl', ['$scope', 'Physicals', function($scope, Physicals){
