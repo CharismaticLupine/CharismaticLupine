@@ -28,7 +28,8 @@
     <div ng-controller="SidebarCtrl">
       <div id="sidebar" ng-style="{ 'top': DOM.headerHeight() + 'px' }">
         <div ng-repeat="feature in geojson.features" class="sidebar-item">
-          <h2>{{feature.properties.id}}</h2>
+          <!-- <h2>{{feature.properties.id}}</h2> -->
+          <h2>Horatio</h2>
           <!-- <img src="https://c1.staticflickr.com/9/8457/8021184421_11b45a8613_b.jpg" alt=""> -->
           <img src="http://localhost:8000/photos/{{feature.properties.photos[0].id}}.jpg" alt="">
           <div class="comments">
@@ -37,7 +38,8 @@
                 <p>{{comment.text}}</p>
                 <ul>
                   <li>{{comment.created_at}}</li>
-                  <li>{{comment}}</li>
+                  <li><a href="#">{{comment.user_id}}</a></li>
+                  <em>{{comment}}</em>
                 </ul>
               </div>
             </div>
