@@ -60,12 +60,13 @@ var snap = angular.module('snap', ["leaflet-directive"])
     $scope.userName = 'Martha Stewart';
   }])
   .controller('MapCtrl', [
-    '$scope', 
+    '$scope',
+    '$rootScope',
     'leafletData', 
     'Map',
     'leafletEvents',
     'DOMelements',
-    function ($scope, leafletData, Map, leafletEvents, DOM) {
+    function ($scope, $rootScope, leafletData, Map, leafletEvents, DOM) {
       $scope.DOM = DOM;
 
       angular.extend($scope, {
@@ -81,6 +82,7 @@ var snap = angular.module('snap', ["leaflet-directive"])
 
       $scope.refresh = function(){
         Map.load().then(function(geojson){
+          $rootScope.geojson = geojson;
           angular.extend($scope, {
             markers: angular.copy(Map.geoJSON2Markers(geojson))
           });
@@ -94,8 +96,8 @@ var snap = angular.module('snap', ["leaflet-directive"])
       });
     }
   ])
-  .controller('SidebarCtrl', ['$scope', 'Physicals', function($scope, Physicals){
-
+  .controller('SidebarCtrl', ['$scope', 'Physicals', 'DOMelements', function($scope, Physicals, DOM){
+    $scope.DOM = DOM;
   }])
 
 // (function(){

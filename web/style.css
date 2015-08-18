@@ -54,6 +54,7 @@ table {
 
 body {
   font-family: "Lato", sans-serif;
+  box-sizing: border-box;
 /*  position: absolute;
   top: 0;
   bottom: 0;
@@ -153,7 +154,15 @@ header {
   bottom: 0;
   right: 0;
   width: 300px;
-}
+  z-index: -1;
+  overflow: scroll;
+  padding: 10px;
+  padding-bottom: 0;
+  }
+  .sidebar-item {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
 
 
 /***************/
