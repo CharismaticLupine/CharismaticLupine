@@ -19,7 +19,7 @@ module.exports = function (app, express) {
   app.use(bodyParser.json());
   app.use(cors());
   //TODO: Set Static Directory
-  app.use(express.static(__dirname + '/../../client'));
+  app.use(express.static(__dirname + '/../../web'));
 
   app.use('/users', userRouter); // use user router for all user request
 

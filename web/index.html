@@ -1,22 +1,49 @@
 <!DOCTYPE html>
-<html class="no-js">
+<html>
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Snap</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h2>Snap</h2>
-  </header>
+  <div ng-app="snap">
+    <header id="header" ng-controller="HeaderCtrl">
+      <div class="row clearfix">
+        <h1>Snap</h1>
+        <ul>
+          <li> {{ userName }} </li>
+        </ul>
+      </div>
+    </header>
 
-  <div id="map"></div>
+    <div ng-controller="MapCtrl">
+      <leaflet defaults="defaults" center="center" markers="markers"
+               ng-style="{ 'top': DOM.headerHeight() + 'px', 'left': 0, 'bottom': 0, 'right': DOM.sidebarWidth() + 'px', 'position': 'absolute' }">
+      </leaflet>
+    </div>
 
-  <script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
-  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <div ng-controller="SidebarCtrl">
+      <div id="sidebar" ng-style="{ 'top': DOM.headerHeight() + 'px' }">
+        <div ng-repeat="feature in geojson.features" class="sidebar-item">
+          <h2>{{feature.properties.id}}</h2>
+          <img src="https://c1.staticflickr.com/9/8457/8021184421_11b45a8613_b.jpg" alt="">
+          <!-- <img src="http://localhost:8000/photos/{{feature.properties.photo.properties.id}}.jpg" alt=""> -->
+          <div>{{feature}}</div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <script src="bower_components/angular/angular.js"></script>
+<!--   <script src="bower_components/underscore/underscore.js"></script>  
+  <script src="bower_components/angular-underscore/angular-underscore.js"></script> -->
+  <script src="bower_components/d3/d3.js" charset="utf-8"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+  <script src="bower_components/angular-leaflet-directive/dist/angular-leaflet-directive.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

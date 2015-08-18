@@ -1,0 +1,22 @@
+{
+  "name": "snap greenfield",
+  "version": "0.0.0",
+  "authors": [
+    "James Conkling <james.lane.conkling@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "underscore": "~1.8.3",
+    "angular": "~1.4.4",
+    "angular-underscore": "~0.5.0",
+    "angular-leaflet-directive": "~0.8.6",
+    "leaflet": "~0.7.3"
+  }
+}
