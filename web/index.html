@@ -12,7 +12,7 @@
   <div ng-app="snap">
     <header id="header" ng-controller="HeaderCtrl">
       <div class="row clearfix">
-        <h1>Snap</h1>
+        <h1>Snap <em>by GoogleLabs</em></h1>
         <ul>
           <li> {{ userName }} </li>
         </ul>
@@ -31,8 +31,19 @@
           <h2>{{feature.properties.id}}</h2>
           <img src="https://c1.staticflickr.com/9/8457/8021184421_11b45a8613_b.jpg" alt="">
           <!-- <img src="http://localhost:8000/photos/{{feature.properties.photo.properties.id}}.jpg" alt=""> -->
-          <div>{{feature}}</div>
+          <div class="comments">
+            <div ng-repeat="comment in feature.properties.comments">
+              <div class="comment">
+                <p>{{comment.text}}</p>
+                <ul>
+                  <li>{{comment.created_at}}</li>
+                  <li>{{comment}}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
+        <!-- <em>{{feature}}</em> -->
       </div>
     </div>
     
