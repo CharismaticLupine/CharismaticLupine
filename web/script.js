@@ -41,6 +41,10 @@ var snap = angular.module('snap', ["leaflet-directive"])
           markers[feature.properties.id] = {
             lat: feature.geometry.coordinates[1],
             lng: feature.geometry.coordinates[0],
+            icon: new L.Icon({ 
+              iconUrl: 'https://api.tiles.mapbox.com/v4/marker/pin-l-rocket+39cccc@2x.png?access_token=pk.eyJ1IjoiamFtZXMtbGFuZS1jb25rbGluZyIsImEiOiJ3RHBOc1BZIn0.edCFqVis7qgHPRgdq0WYsA',
+              iconRetinaUrl: 'https://api.tiles.mapbox.com/v4/marker/pin-l-rocket+39cccc@2x.png?access_token=pk.eyJ1IjoiamFtZXMtbGFuZS1jb25rbGluZyIsImEiOiJ3RHBOc1BZIn0.edCFqVis7qgHPRgdq0WYsA',
+            })
           };
         });
         return markers;
@@ -76,7 +80,7 @@ var snap = angular.module('snap', ["leaflet-directive"])
         center: {
           lat: 37.78,
           lng: -122.45,
-          zoom: 13
+          zoom: 15
         }
       });
 

@@ -91,10 +91,10 @@ body {
 
 a {
   text-decoration: none;
-  color: #FF6565;
+  color: #9BE5E5;
   }
   a:hover {
-    color: #F40A0A;
+    color: #90D4D4;
     text-decoration: underline;
   }
 
@@ -118,6 +118,7 @@ header {
   background-color: #333333;
   color: #fafafa;
   font-weight: 200;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
   }
   header h1,
   header ul{
@@ -156,12 +157,33 @@ header {
   width: 300px;
   z-index: -1;
   overflow: scroll;
+  border-left: 1px solid #ccc;
   padding: 10px;
   padding-bottom: 0;
+  box-shadow: -1px 0 6px rgba(0, 0, 0, 0.2);
   }
   .sidebar-item {
     font-size: 11px;
-    margin-bottom: 10px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+  }
+  .sidebar-item h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  .sidebar-item p {
+    font-size: 14px;
+    margin-bottom: 2px;
+    padding: 4px 0;
+    font-weight: 200;
+  }
+  .sidebar-item .date {
+    color: #AAA;
+    float: right;
+  }
+  .sidebar-item .user {
+    float: left;
   }
   #sidebar img {
     width: 100%;
@@ -181,6 +203,9 @@ header {
   width:100%;
   }
 */
+.angular-leaflet-map {
+  z-index: -1;
+}
 
 /* D3 marker styles */
 path {
