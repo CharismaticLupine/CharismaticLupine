@@ -76,7 +76,7 @@ var snap = angular.module('snap', ["leaflet-directive"])
         center: {
           lat: 37.78,
           lng: -122.45,
-          zoom: 13
+          zoom: 15
         }
       });
 

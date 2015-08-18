@@ -91,10 +91,10 @@ body {
 
 a {
   text-decoration: none;
-  color: #FF6565;
+  color: #9BE5E5;
   }
   a:hover {
-    color: #F40A0A;
+    color: #90D4D4;
     text-decoration: underline;
   }
 
@@ -164,11 +164,26 @@ header {
   }
   .sidebar-item {
     font-size: 11px;
-    margin-bottom: 10px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
   }
   .sidebar-item h2 {
     font-size: 18px;
     margin-bottom: 8px;
+  }
+  .sidebar-item p {
+    font-size: 14px;
+    margin-bottom: 2px;
+    padding: 4px 0;
+    font-weight: 200;
+  }
+  .sidebar-item .date {
+    color: #AAA;
+    float: right;
+  }
+  .sidebar-item .user {
+    float: left;
   }
   #sidebar img {
     width: 100%;
