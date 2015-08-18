@@ -4,7 +4,7 @@ var fs = require('fs');
 Promise.promisifyAll(fs);
 
 var savePhotoToFs = function(photoId, buffer) {
-  var filePath = __dirname + '/../../photos/' + photoId + '.jpg';
+  var filePath = __dirname + '/../../web/photos/' + photoId + '.jpg';
   fs.writeFileAsync(filePath, buffer)
   .then(function() {
     console.log('Wrote photo to disk');
@@ -17,7 +17,7 @@ var savePhotoToFs = function(photoId, buffer) {
 };
 
 var getPhotoFromFs = function(photoId) {
-  var filePath = __dirname + '/../../photos/' + photoId + '.jpg';
+  var filePath = __dirname + '/../../web/photos/' + photoId + '.jpg';
   return fs.readFileAsync(filePath);
 };
 
