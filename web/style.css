@@ -131,9 +131,9 @@ header {
   }
   header h1 em {
     font-style: italic;
-    color: #FFC6C6; 
+    color: #9BE5E5; 
     font-size: 12px;
-    letter-spacing: 0;
+    letter-spacing: 1px;
   }
   header ul {
     float: right;
@@ -162,6 +162,10 @@ header {
   .sidebar-item {
     font-size: 11px;
     margin-bottom: 10px;
+  }
+  #sidebar img {
+    width: 100%;
+    margin-bottom: 8px;
   }
 
 
